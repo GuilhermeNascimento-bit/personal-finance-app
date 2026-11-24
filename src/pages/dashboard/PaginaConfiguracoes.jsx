@@ -4,6 +4,9 @@ import { updateProfile, sendPasswordResetEmail } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { auth, storage } from "../../firebase/firebaseConfig";
 import { useMoeda, MOEDAS } from "../../context/MoedaContext";
+import { IDIOMAS, useIdioma } from "../../i18n/IdiomaContext";
+import { trocarTemaAnimado } from "../../utils/tema";
+import Icone from "../../components/Icone";
 import "./configuracoes.css";
 
 // ── Paleta de cores de destaque ───────────────────────────────────────────────
@@ -28,21 +31,16 @@ export function aplicarCor(cor) {
 // ── Temas ─────────────────────────────────────────────────────────────────────
 
 const TEMAS = [
-  { valor: "auto",   icone: "⚙️", label: "Automático" },
-  { valor: "claro",  icone: "☀️", label: "Claro" },
-  { valor: "escuro", icone: "🌙", label: "Escuro" },
+  { valor: "auto",   icone: "auto" },
+  { valor: "claro",  icone: "sol" },
+  { valor: "escuro", icone: "lua" },
 ];
-
-function aplicarTema(tema) {
-  if (tema === "auto") document.documentElement.removeAttribute("data-tema");
-  else document.documentElement.setAttribute("data-tema", tema);
-  localStorage.setItem("tema", tema);
-}
 
 // ── Componente ────────────────────────────────────────────────────────────────
 
 export default function PaginaConfiguracoes() {
   const { usuario, sair } = useAuth();
+  const { t, idioma, setIdioma } = useIdioma();
   const fotoInputRef = useRef(null);
 
   const [nome, setNome] = useState(usuario?.displayName || "");
@@ -69,9 +67,9 @@ export default function PaginaConfiguracoes() {
     setMsgNome(null);
     try {
       await updateProfile(auth.currentUser, { displayName: nome.trim() });
-      setMsgNome({ tipo: "sucesso", texto: "Nome atualizado!" });
+      setMsgNome({ tipo: "sucesso", texto: t("config.nomeOk") });
     } catch {
-      setMsgNome({ tipo: "erro", texto: "Erro ao atualizar o nome." });
+      setMsgNome({ tipo: "erro", texto: t("config.nomeErro") });
     } finally {
       setSalvandoNome(false);
     }
@@ -82,11 +80,11 @@ export default function PaginaConfiguracoes() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      setMsgFoto({ tipo: "erro", texto: "Selecione uma imagem (JPG, PNG, etc.)." });
+      setMsgFoto({ tipo: "erro", texto: t("config.fotoTipo") });
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      setMsgFoto({ tipo: "erro", texto: "A imagem deve ter no máximo 5 MB." });
+      setMsgFoto({ tipo: "erro", texto: t("config.fotoTamanho") });
       return;
     }
 
@@ -98,10 +96,10 @@ export default function PaginaConfiguracoes() {
       const url = await getDownloadURL(storageRef);
       await updateProfile(auth.currentUser, { photoURL: url });
       setFotoUrl(url);
-      setMsgFoto({ tipo: "sucesso", texto: "Foto atualizada!" });
+      setMsgFoto({ tipo: "sucesso", texto: t("config.fotoOk") });
     } catch (err) {
       console.error("Erro no upload:", err);
-      setMsgFoto({ tipo: "erro", texto: "Erro ao enviar a foto. Verifique as regras do Storage." });
+      setMsgFoto({ tipo: "erro", texto: t("config.fotoErro") });
     } finally {
       setUploadandoFoto(false);
     }
@@ -112,9 +110,9 @@ export default function PaginaConfiguracoes() {
     setMsgSenha(null);
     try {
       await sendPasswordResetEmail(auth, usuario.email);
-      setMsgSenha({ tipo: "sucesso", texto: `Link enviado para ${usuario.email}.` });
+      setMsgSenha({ tipo: "sucesso", texto: t("config.linkEnviado", { email: usuario.email }) });
     } catch {
-      setMsgSenha({ tipo: "erro", texto: "Erro ao enviar o e-mail. Tente novamente." });
+      setMsgSenha({ tipo: "erro", texto: t("config.linkErro") });
     }
   }
 
@@ -125,188 +123,202 @@ export default function PaginaConfiguracoes() {
   }
 
   // Aparência — tema
-  function mudarTema(t) {
-    setTema(t);
-    aplicarTema(t);
+  function mudarTema(novo, evento) {
+    setTema(novo);
+    trocarTemaAnimado(novo, evento);
   }
 
+  const inicial = (usuario?.displayName || usuario?.email || "U")[0].toUpperCase();
+
   return (
-    <div className="pagina-configuracoes">
-
-      {/* ── Perfil ── */}
-      <div className="secao-config">
-        <h3 className="titulo-config">Perfil</h3>
-
-        {/* Foto de perfil */}
-        <div className="foto-perfil-wrapper">
-          <div className="foto-perfil-preview">
-            {fotoUrl
-              ? <img src={fotoUrl} alt="perfil" className="foto-perfil-img" />
-              : <span className="foto-perfil-inicial">
-                  {(usuario?.displayName || usuario?.email || "U")[0].toUpperCase()}
-                </span>
-            }
+    <div className="cfg">
+      {/* ═══════ Cartão de perfil ═══════ */}
+      <aside className="cfg-perfil-palco">
+        <div className="cfg-perfil luz inclinar">
+          <span className="cfg-perfil-brilho" aria-hidden="true" />
+          <div className="cfg-avatar">
+            {fotoUrl ? <img src={fotoUrl} alt="" /> : <span>{inicial}</span>}
             <button
-              className="foto-perfil-overlay"
+              className="cfg-avatar-botao"
               onClick={() => fotoInputRef.current?.click()}
               disabled={uploadandoFoto}
-              title="Alterar foto"
+              title={t("config.alterarFoto")}
+              aria-label={t("config.alterarFoto")}
             >
-              {uploadandoFoto ? "…" : "📷"}
+              {uploadandoFoto ? <span className="cfg-girando" /> : <Icone nome="camera" tamanho={16} />}
+            </button>
+            <input ref={fotoInputRef} type="file" accept="image/*" hidden onChange={handleFotoChange} />
+          </div>
+          <p className="cfg-perfil-nome">{usuario?.displayName || t("config.seuNome")}</p>
+          <p className="cfg-perfil-email">{usuario?.email}</p>
+          {msgFoto && <p className={`cfg-msg ${msgFoto.tipo}`}>{msgFoto.texto}</p>}
+          <p className="cfg-perfil-dica">{t("config.fotoDesc")}</p>
+
+          <div className="cfg-perfil-acoes">
+            <button
+              className="cfg-perfil-botao"
+              onClick={() => {
+                localStorage.removeItem("tutorial-completo");
+                window.location.reload();
+              }}
+            >
+              <Icone nome="recomendacoes" tamanho={16} /> {t("config.reverTour")}
+            </button>
+            <button className="cfg-perfil-botao sair" onClick={sair}>
+              <Icone nome="sair" tamanho={16} /> {t("comum.sair")}
             </button>
           </div>
-          <div>
-            <p className="linha-config-titulo">Foto de perfil</p>
-            <p className="linha-config-desc">JPG ou PNG · máx. 5 MB</p>
-            {msgFoto && (
-              <p className={`mensagem-config ${msgFoto.tipo}`} style={{ marginTop: 6 }}>
-                {msgFoto.texto}
-              </p>
-            )}
+        </div>
+      </aside>
+
+      {/* ═══════ Seções ═══════ */}
+      <div className="cfg-secoes">
+        {/* Perfil */}
+        <section className="cfg-secao luz">
+          <header className="cfg-secao-cab">
+            <span className="cfg-secao-icone"><Icone nome="usuario" tamanho={18} /></span>
+            <div>
+              <h3>{t("config.perfil")}</h3>
+              <p>{t("config.perfilDesc")}</p>
+            </div>
+          </header>
+          <div className="cfg-campos">
+            <label className="cfg-campo">
+              <span>{t("config.nomeExibicao")}</span>
+              <input
+                type="text"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && salvarNome()}
+                placeholder={t("config.seuNome")}
+              />
+            </label>
+            <label className="cfg-campo">
+              <span>{t("config.email")}</span>
+              <input type="email" value={usuario?.email || ""} disabled />
+            </label>
           </div>
-          <input
-            ref={fotoInputRef}
-            type="file"
-            accept="image/*"
-            style={{ display: "none" }}
-            onChange={handleFotoChange}
-          />
-        </div>
+          <div className="cfg-linha-fim">
+            {msgNome ? <p className={`cfg-msg ${msgNome.tipo}`}>{msgNome.texto}</p> : <span />}
+            <button
+              className="cfg-botao"
+              onClick={salvarNome}
+              disabled={salvandoNome || !nome.trim() || nome.trim() === usuario?.displayName}
+            >
+              {salvandoNome ? t("comum.salvando") : t("config.salvarNome")}
+            </button>
+          </div>
+        </section>
 
-        <div className="campo-config">
-          <label htmlFor="cfg-nome">Nome de exibição</label>
-          <input
-            id="cfg-nome"
-            type="text"
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && salvarNome()}
-            placeholder="Seu nome"
-          />
-        </div>
-        <div className="campo-config">
-          <label>E-mail</label>
-          <input type="email" value={usuario?.email || ""} disabled />
-        </div>
-        {msgNome && <p className={`mensagem-config ${msgNome.tipo}`}>{msgNome.texto}</p>}
-        <button
-          className="botao-config"
-          onClick={salvarNome}
-          disabled={salvandoNome || !nome.trim()}
-        >
-          {salvandoNome ? "Salvando..." : "Salvar nome"}
-        </button>
-      </div>
+        {/* Aparência */}
+        <section className="cfg-secao luz">
+          <header className="cfg-secao-cab">
+            <span className="cfg-secao-icone"><Icone nome="pincel" tamanho={18} /></span>
+            <div>
+              <h3>{t("config.aparencia")}</h3>
+              <p>{t("config.aparenciaDesc")}</p>
+            </div>
+          </header>
 
-      {/* ── Aparência ── */}
-      <div className="secao-config">
-        <h3 className="titulo-config">Aparência</h3>
+          <p className="cfg-rotulo">{t("config.tema")}</p>
+          <div className="cfg-temas">
+            {TEMAS.map((op) => (
+              <button
+                key={op.valor}
+                className={`cfg-tema ${tema === op.valor ? "ativo" : ""}`}
+                onClick={(e) => mudarTema(op.valor, e)}
+              >
+                <span className={`cfg-tema-previa previa-${op.valor}`} aria-hidden="true">
+                  <i /><i /><i />
+                </span>
+                <span className="cfg-tema-rotulo">
+                  <Icone nome={op.icone} tamanho={15} />
+                  {t(`config.tema_${op.valor}`)}
+                </span>
+              </button>
+            ))}
+          </div>
 
-        <div>
-          <p className="label-config">Cor de destaque</p>
-          <div className="grade-cores">
-            {PALETA_CORES.map((cor) => (
+          <p className="cfg-rotulo">{t("config.corDestaque")}</p>
+          <div className="cfg-cores">
+            {PALETA_CORES.map((cor, i) => (
               <button
                 key={cor.id}
-                className={`botao-cor ${corId === cor.id ? "ativo" : ""}`}
-                style={{ "--cor-botao": cor.acento }}
+                className={`cfg-cor ${corId === cor.id ? "ativo" : ""}`}
+                style={{ "--cor-botao": cor.acento, animationDelay: `${i * 40}ms` }}
                 onClick={() => mudarCor(cor)}
                 title={cor.nome}
+                aria-label={cor.nome}
               >
-                {corId === cor.id && <span className="cor-check">✓</span>}
+                {corId === cor.id && <Icone nome="check" tamanho={16} />}
               </button>
             ))}
           </div>
-        </div>
+        </section>
 
-        <div>
-          <p className="label-config">Tema</p>
-          <div className="grade-tema">
-            {TEMAS.map((t) => (
+        {/* Idioma e moeda */}
+        <section className="cfg-secao luz">
+          <header className="cfg-secao-cab">
+            <span className="cfg-secao-icone"><Icone nome="globo" tamanho={18} /></span>
+            <div>
+              <h3>{t("config.regiao")}</h3>
+              <p>{t("config.regiaoDesc")}</p>
+            </div>
+          </header>
+
+          <p className="cfg-rotulo">{t("config.idioma")}</p>
+          <div className="cfg-opcoes">
+            {IDIOMAS.map((i) => (
               <button
-                key={t.valor}
-                className={`botao-tema ${tema === t.valor ? "ativo" : ""}`}
-                onClick={() => mudarTema(t.valor)}
+                key={i.codigo}
+                className={`cfg-opcao ${idioma === i.codigo ? "ativo" : ""}`}
+                onClick={() => setIdioma(i.codigo)}
               >
-                <span className="icone-tema">{t.icone}</span>
-                {t.label}
+                <span className="cfg-opcao-emoji">{i.bandeira}</span>
+                <span className="cfg-opcao-texto">
+                  <strong>{i.nome}</strong>
+                  <small>{i.codigo.toUpperCase()}</small>
+                </span>
               </button>
             ))}
           </div>
-        </div>
-      </div>
 
-      {/* ── Moeda ── */}
-      <div className="secao-config">
-        <h3 className="titulo-config">Moeda</h3>
-        <div className="grade-moedas">
-          {MOEDAS.map((m) => (
-            <button
-              key={m.codigo}
-              className={`botao-moeda ${moeda.codigo === m.codigo ? "ativo" : ""}`}
-              onClick={() => setMoeda(m.codigo)}
-            >
-              <span className="moeda-bandeira">{m.bandeira}</span>
-              <span className="moeda-simbolo">{m.simbolo}</span>
-              <span className="moeda-nome">{m.nome}</span>
+          <p className="cfg-rotulo">{t("config.moeda")}</p>
+          <div className="cfg-opcoes tres">
+            {MOEDAS.map((m) => (
+              <button
+                key={m.codigo}
+                className={`cfg-opcao ${moeda.codigo === m.codigo ? "ativo" : ""}`}
+                onClick={() => setMoeda(m.codigo)}
+              >
+                <span className="cfg-opcao-emoji">{m.bandeira}</span>
+                <span className="cfg-opcao-texto">
+                  <strong>{t(`config.moeda_${m.codigo}`)}</strong>
+                  <small>{m.simbolo} · {m.codigo}</small>
+                </span>
+              </button>
+            ))}
+          </div>
+          <p className="cfg-dica">⠿ {t("config.ordemAbas")}</p>
+        </section>
+
+        {/* Segurança */}
+        <section className="cfg-secao luz">
+          <header className="cfg-secao-cab">
+            <span className="cfg-secao-icone"><Icone nome="cadeado" tamanho={18} /></span>
+            <div>
+              <h3>{t("config.seguranca")}</h3>
+              <p>{t("config.alterarSenhaDesc")}</p>
+            </div>
+          </header>
+          <div className="cfg-linha-fim">
+            {msgSenha ? <p className={`cfg-msg ${msgSenha.tipo}`}>{msgSenha.texto}</p> : <span className="cfg-dica">{t("config.alterarSenha")}</span>}
+            <button className="cfg-botao secundario" onClick={enviarResetSenha}>
+              {t("config.enviarLink")}
             </button>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Abas da sidebar ── */}
-      <div className="secao-config">
-        <h3 className="titulo-config">Ordem das abas</h3>
-        <p className="linha-config-desc" style={{ marginBottom: 4 }}>
-          Arraste as abas na barra lateral para reordená-las. A posição é salva automaticamente.
-        </p>
-        <div className="aviso-ordem-abas">
-          ⠿ &nbsp;Pegue pelo ícone de grip ao lado de cada item na barra lateral e arraste para cima ou para baixo.
-        </div>
-      </div>
-
-      {/* ── Segurança ── */}
-      <div className="secao-config">
-        <h3 className="titulo-config">Segurança</h3>
-        <div className="linha-config">
-          <div className="linha-config-info">
-            <p className="linha-config-titulo">Alterar senha</p>
-            <p className="linha-config-desc">Enviaremos um link de redefinição para o seu e-mail.</p>
           </div>
-          <button className="botao-config-secundario" onClick={enviarResetSenha}>
-            Enviar link
-          </button>
-        </div>
-        {msgSenha && <p className={`mensagem-config ${msgSenha.tipo}`}>{msgSenha.texto}</p>}
+        </section>
       </div>
-
-      {/* ── Conta ── */}
-      <div className="secao-config">
-        <h3 className="titulo-config">Conta</h3>
-        <div className="linha-config">
-          <div className="linha-config-info">
-            <p className="linha-config-titulo">Tour de apresentação</p>
-            <p className="linha-config-desc">Rever o tutorial de boas-vindas do app.</p>
-          </div>
-          <button
-            className="botao-config-secundario"
-            onClick={() => {
-              localStorage.removeItem("tutorial-completo");
-              window.location.reload();
-            }}
-          >
-            Rever tour
-          </button>
-        </div>
-        <div className="linha-config">
-          <div className="linha-config-info">
-            <p className="linha-config-titulo">Sair da conta</p>
-            <p className="linha-config-desc">Você precisará fazer login novamente.</p>
-          </div>
-          <button className="botao-config-perigo" onClick={sair}>Sair</button>
-        </div>
-      </div>
-
     </div>
   );
 }

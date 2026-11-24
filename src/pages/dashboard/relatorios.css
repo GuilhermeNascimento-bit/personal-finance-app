@@ -22,7 +22,7 @@
 .btn-exportar-pdf {
   height: 36px;
   padding: 0 18px;
-  border-radius: 10px;
+  border-radius: var(--raio-md);
   border: 1px solid var(--cor-acento);
   background: var(--cor-acento-fundo-suave);
   color: var(--cor-acento);
@@ -36,8 +36,7 @@
 
 .btn-exportar-pdf:hover:not(:disabled) {
   background: var(--cor-acento);
-  color: #fff;
-  transform: translateY(-1px);
+  color: var(--cor-sobre-acento);
 }
 
 .btn-exportar-pdf:disabled {
@@ -66,7 +65,7 @@
 .btn-periodo.ativo {
   background: var(--cor-acento);
   border-color: var(--cor-acento);
-  color: #fff;
+  color: var(--cor-sobre-acento);
   font-weight: 600;
 }
 
@@ -79,14 +78,13 @@
 .card-relatorio {
   background: var(--cor-fundo-cartao);
   border: 1px solid var(--cor-borda-cartao);
-  border-radius: 14px;
+  border-radius: var(--raio-xl);
   padding: 18px 16px;
   animation: fadeUp 0.35s ease both;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card-relatorio:hover {
-  transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
@@ -113,7 +111,7 @@
 .cartao-relatorio {
   background: var(--cor-fundo-cartao);
   border: 1px solid var(--cor-borda-cartao);
-  border-radius: 14px;
+  border-radius: var(--raio-xl);
   padding: 20px;
   animation: fadeUp 0.4s ease 0.1s both;
 }
@@ -193,7 +191,7 @@
 
 .barra-cat-fundo {
   height: 6px;
-  border-radius: 3px;
+  border-radius: var(--raio-xs);
   background: var(--cor-borda);
   overflow: hidden;
   margin-bottom: 4px;
@@ -201,7 +199,7 @@
 
 .barra-cat-progresso {
   height: 100%;
-  border-radius: 3px;
+  border-radius: var(--raio-xs);
   background: var(--cor-acento);
   transition: width 0.5s ease;
 }

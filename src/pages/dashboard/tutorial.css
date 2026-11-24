@@ -11,7 +11,7 @@
 
 .tutorial-spotlight {
   position: fixed;
-  border-radius: 12px;
+  border-radius: var(--raio-lg);
   /* sombra gigante que escurece tudo ao redor do elemento */
   box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.62);
   transition: top 0.35s cubic-bezier(0.4, 0, 0.2, 1),
@@ -28,7 +28,7 @@
   width: 308px;
   background: var(--cor-fundo-cartao);
   border: 1px solid var(--cor-borda-cartao);
-  border-radius: 16px;
+  border-radius: var(--raio-xl);
   padding: 20px;
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.28);
   pointer-events: all;
@@ -52,7 +52,7 @@
 .tutorial-seg {
   flex: 1;
   height: 3px;
-  border-radius: 2px;
+  border-radius: var(--raio-xs);
   background: var(--cor-borda);
   cursor: pointer;
   transition: background 0.2s ease;
@@ -120,7 +120,7 @@
 .tutorial-btn-voltar {
   height: 36px;
   padding: 0 14px;
-  border-radius: 10px;
+  border-radius: var(--raio-md);
   border: 1px solid var(--cor-borda);
   background: transparent;
   color: var(--cor-texto-label);
@@ -138,10 +138,10 @@
 .tutorial-btn-avancar {
   height: 36px;
   padding: 0 18px;
-  border-radius: 10px;
+  border-radius: var(--raio-md);
   border: none;
   background: var(--cor-acento);
-  color: #fff;
+  color: var(--cor-sobre-acento);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -151,6 +151,5 @@
 
 .tutorial-btn-avancar:hover {
   background: var(--cor-acento-hover);
-  transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }

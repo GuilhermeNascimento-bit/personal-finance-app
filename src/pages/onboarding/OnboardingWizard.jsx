@@ -11,12 +11,14 @@ import EtapaDespesasVariaveis from "./EtapaDespesasVariaveis";
 import EtapaRecorrentes from "./EtapaRecorrentes";
 import EtapaResumo from "./EtapaResumo";
 import "./onboarding.css";
+import { useIdioma } from "../../i18n/IdiomaContext";
 
 const TOTAL_ETAPAS = 7;
 
 export default function OnboardingWizard({ aoConcluir }) {
   const { usuario } = useAuth();
   const { setMoeda } = useMoeda();
+  const { t } = useIdioma();
 
   const [etapaAtual, setEtapaAtual] = useState(0);
   const [salvando, setSalvando] = useState(false);
@@ -78,7 +80,7 @@ export default function OnboardingWizard({ aoConcluir }) {
 
       aoConcluir();
     } catch {
-      setErro("Não foi possível salvar seus dados. Tente novamente.");
+      setErro(t("ob.erroSalvar"));
       setSalvando(false);
     }
   }
@@ -136,7 +138,7 @@ export default function OnboardingWizard({ aoConcluir }) {
 
   return (
     <div className="tela-onboarding">
-      <div className="cartao-onboarding">
+      <div className="cartao-onboarding luz">
         <div className="barra-progresso">
           {Array.from({ length: TOTAL_ETAPAS }).map((_, i) => (
             <div
@@ -145,7 +147,7 @@ export default function OnboardingWizard({ aoConcluir }) {
             />
           ))}
         </div>
-        {etapas[etapaAtual]}
+        <div className="etapa-transicao" key={etapaAtual}>{etapas[etapaAtual]}</div>
       </div>
     </div>
   );

@@ -27,7 +27,7 @@
 .fluxo-btn-mes {
   width: 34px;
   height: 34px;
-  border-radius: 10px;
+  border-radius: var(--raio-md);
   border: 1px solid var(--cor-borda);
   background: var(--cor-fundo-cartao);
   color: var(--cor-texto-principal);
@@ -63,19 +63,19 @@
 .fluxo-resumo-item {
   background: var(--cor-fundo-cartao);
   border: 1px solid var(--cor-borda-cartao);
-  border-radius: 12px;
+  border-radius: var(--raio-lg);
   padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 3px;
 }
 
-.fluxo-resumo-item.verde      { border-left: 3px solid #1d9e75; }
-.fluxo-resumo-item.verde-suave { border-left: 3px solid rgba(29,158,117,0.35); }
-.fluxo-resumo-item.vermelho   { border-left: 3px solid #e54b4b; }
-.fluxo-resumo-item.vermelho-suave { border-left: 3px solid rgba(229,75,75,0.35); }
+.fluxo-resumo-item.verde      { border-left: 3px solid var(--cor-receita); }
+.fluxo-resumo-item.verde-suave { border-left: 3px solid color-mix(in srgb, var(--cor-receita) 35%, transparent); }
+.fluxo-resumo-item.vermelho   { border-left: 3px solid var(--cor-perigo); }
+.fluxo-resumo-item.vermelho-suave { border-left: 3px solid color-mix(in srgb, var(--cor-perigo) 35%, transparent); }
 .fluxo-resumo-item.saldo      { border-left: 3px solid var(--cor-acento); }
-.fluxo-resumo-item.saldo.negativo { border-left-color: #e54b4b; }
+.fluxo-resumo-item.saldo.negativo { border-left-color: var(--cor-perigo); }
 
 .fluxo-resumo-label {
   font-size: 11px;
@@ -108,7 +108,7 @@
 .fluxo-secao {
   background: var(--cor-fundo-cartao);
   border: 1px solid var(--cor-borda-cartao);
-  border-radius: 16px;
+  border-radius: var(--raio-xl);
   padding: 18px;
 }
 
@@ -138,7 +138,7 @@
 .fluxo-btn-adicionar {
   height: 28px;
   padding: 0 10px;
-  border-radius: 8px;
+  border-radius: var(--raio-md);
   border: 1px solid var(--cor-borda);
   background: transparent;
   color: var(--cor-acento);
@@ -165,13 +165,13 @@
   align-items: center;
   gap: 10px;
   padding: 9px 12px;
-  border-radius: 10px;
+  border-radius: var(--raio-md);
   border: 1px solid var(--cor-borda-cartao);
   background: var(--cor-fundo-secao);
 }
 
-.fluxo-rec-item.receita { border-left: 3px solid rgba(29,158,117,0.5); }
-.fluxo-rec-item.despesa { border-left: 3px solid rgba(229,75,75,0.5); }
+.fluxo-rec-item.receita { border-left: 3px solid color-mix(in srgb, var(--cor-receita) 50%, transparent); }
+.fluxo-rec-item.despesa { border-left: 3px solid color-mix(in srgb, var(--cor-perigo) 50%, transparent); }
 
 .fluxo-rec-seta {
   font-size: 13px;
@@ -179,8 +179,8 @@
   flex-shrink: 0;
 }
 
-.fluxo-rec-seta.receita { color: #1d9e75; }
-.fluxo-rec-seta.despesa { color: #e54b4b; }
+.fluxo-rec-seta.receita { color: var(--cor-receita); }
+.fluxo-rec-seta.despesa { color: var(--cor-perigo); }
 
 .fluxo-rec-info { flex: 1; min-width: 0; }
 
@@ -209,7 +209,7 @@
 .fluxo-rec-btn {
   width: 26px;
   height: 26px;
-  border-radius: 6px;
+  border-radius: var(--raio-sm);
   border: 1px solid var(--cor-borda);
   background: transparent;
   cursor: pointer;
@@ -228,9 +228,9 @@
 }
 
 .fluxo-rec-btn.excluir:hover {
-  background: rgba(229,75,75,0.08);
-  color: #e54b4b;
-  border-color: rgba(229,75,75,0.3);
+  background: color-mix(in srgb, var(--cor-perigo) 8%, transparent);
+  color: var(--cor-perigo);
+  border-color: color-mix(in srgb, var(--cor-perigo) 30%, transparent);
 }
 
 /* ── Timeline ─────────────────────────────────────────────────────────────────── */
@@ -242,7 +242,7 @@
 }
 
 .fluxo-dia {
-  border-radius: 12px;
+  border-radius: var(--raio-lg);
   border: 1px solid var(--cor-borda-cartao);
   overflow: hidden;
 }
@@ -280,8 +280,8 @@
   font-weight: 700;
 }
 
-.fluxo-dia-saldo.positivo { color: #1d9e75; }
-.fluxo-dia-saldo.negativo { color: #e54b4b; }
+.fluxo-dia-saldo.positivo { color: var(--cor-receita); }
+.fluxo-dia-saldo.negativo { color: var(--cor-perigo); }
 
 /* ── Item do dia ──────────────────────────────────────────────────────────────── */
 
@@ -313,8 +313,8 @@
   text-align: center;
 }
 
-.fluxo-item-seta.receita { color: #1d9e75; }
-.fluxo-item-seta.despesa { color: #e54b4b; }
+.fluxo-item-seta.receita { color: var(--cor-receita); }
+.fluxo-item-seta.despesa { color: var(--cor-perigo); }
 
 .fluxo-item-cat {
   flex: 1;
@@ -356,15 +356,15 @@
   flex-shrink: 0;
 }
 
-.fluxo-item-valor.receita { color: #1d9e75; }
-.fluxo-item-valor.despesa { color: #e54b4b; }
+.fluxo-item-valor.receita { color: var(--cor-receita); }
+.fluxo-item-valor.despesa { color: var(--cor-perigo); }
 
 .fluxo-item-dot {
   font-size: 10px;
   flex-shrink: 0;
 }
 
-.fluxo-item-dot.pago { color: #1d9e75; }
+.fluxo-item-dot.pago { color: var(--cor-receita); }
 .fluxo-item-dot.pendente { color: var(--cor-texto-secundario); }
 
 /* ── Botões confirmar / desfazer ──────────────────────────────────────────────── */
@@ -372,7 +372,7 @@
 .fluxo-btn-confirmar {
   height: 24px;
   padding: 0 10px;
-  border-radius: 6px;
+  border-radius: var(--raio-sm);
   border: 1px solid var(--cor-acento);
   background: transparent;
   color: var(--cor-acento);
@@ -386,7 +386,7 @@
 
 .fluxo-btn-confirmar:hover {
   background: var(--cor-acento);
-  color: #fff;
+  color: var(--cor-sobre-acento);
 }
 
 .fluxo-btn-confirmar:disabled {
@@ -397,10 +397,10 @@
 .fluxo-btn-desfazer {
   height: 24px;
   padding: 0 10px;
-  border-radius: 6px;
-  border: 1px solid rgba(29,158,117,0.4);
-  background: rgba(29,158,117,0.08);
-  color: #1d9e75;
+  border-radius: var(--raio-sm);
+  border: 1px solid color-mix(in srgb, var(--cor-receita) 40%, transparent);
+  background: color-mix(in srgb, var(--cor-receita) 8%, transparent);
+  color: var(--cor-receita);
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
@@ -409,9 +409,9 @@
 }
 
 .fluxo-btn-desfazer:hover {
-  background: rgba(229,75,75,0.08);
-  color: #e54b4b;
-  border-color: rgba(229,75,75,0.3);
+  background: color-mix(in srgb, var(--cor-perigo) 8%, transparent);
+  color: var(--cor-perigo);
+  border-color: color-mix(in srgb, var(--cor-perigo) 30%, transparent);
 }
 
 .fluxo-btn-desfazer:disabled {

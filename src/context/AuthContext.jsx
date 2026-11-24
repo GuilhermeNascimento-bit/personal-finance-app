@@ -46,7 +46,7 @@ export function AuthProvider({ children }) {
       await cadastrarUsuarioFirebase(nome, email, senha);
       return { sucesso: true };
     } catch (erro) {
-      return { sucesso: false, mensagem: traduzirErroFirebase(erro.code) };
+      return { sucesso: false, codigo: erro.code, mensagem: traduzirErroFirebase(erro.code) };
     }
   }
 
@@ -55,7 +55,7 @@ export function AuthProvider({ children }) {
       await logarUsuarioFirebase(email, senha);
       return { sucesso: true };
     } catch (erro) {
-      return { sucesso: false, mensagem: traduzirErroFirebase(erro.code) };
+      return { sucesso: false, codigo: erro.code, mensagem: traduzirErroFirebase(erro.code) };
     }
   }
 

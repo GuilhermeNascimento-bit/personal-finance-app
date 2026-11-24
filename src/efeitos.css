@@ -1,0 +1,287 @@
+/* efeitos.css — global: luz reativa, luz ambiente, animações compartilhadas.
+   Importado em main.jsx para valer em todas as telas (login, onboarding, painel). */
+
+/* Transição de tema: desliga o crossfade padrão (usamos o círculo) */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Variáveis da luz: não herdáveis → mudar no pai não recalcula os filhos */
+@property --mx { syntax: "<length>"; inherits: false; initial-value: -999px; }
+@property --my { syntax: "<length>"; inherits: false; initial-value: -999px; }
+@property --luz-on { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --rx { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@property --ry { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+
+/* ══════════════ Luz ambiente ══════════════ */
+.fundo-ambiente {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Gradiente radial em vez de filter: blur() — mesmo visual, custo muito menor */
+.orbe {
+  position: absolute;
+  border-radius: 50%;
+  opacity: var(--orbe-opacidade);
+  will-change: transform;
+  background: radial-gradient(closest-side, var(--orbe-cor), transparent);
+}
+
+.orbe-1 {
+  width: 46vw;
+  height: 46vw;
+  left: -14vw;
+  top: -18vw;
+  --orbe-cor: color-mix(in srgb, var(--cor-acento) 34%, transparent);
+  animation: flutuar1 26s ease-in-out infinite alternate;
+}
+
+.orbe-2 {
+  width: 38vw;
+  height: 38vw;
+  right: -12vw;
+  top: 30vh;
+  --orbe-cor: color-mix(in srgb, var(--grafico-3) 26%, transparent);
+  animation: flutuar2 32s ease-in-out infinite alternate;
+}
+
+/* Segue o cursor — posicionado via JS (useLuzReativa) com suavização rápida */
+.orbe-cursor {
+  width: 420px;
+  height: 420px;
+  left: 0;
+  top: 0;
+  --orbe-cor: color-mix(in srgb, var(--cor-acento) 30%, transparent);
+  opacity: 0;
+  transform: translate3d(-9999px, 0, 0);
+  transition: opacity 0.4s ease;
+}
+
+@keyframes flutuar1 {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(8vw, 6vh) scale(1.12); }
+  100% { transform: translate(3vw, 14vh) scale(0.95); }
+}
+
+@keyframes flutuar2 {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(-10vw, -8vh) scale(1.08); }
+  100% { transform: translate(-4vw, 10vh) scale(1.15); }
+}
+
+/* ══════════════ Superfície iluminada (.luz) ══════════════
+   Spotlight interno que segue o mouse + borda que acende perto do cursor. */
+.luz {
+  position: relative;
+  --mx: -999px;
+  --my: -999px;
+}
+
+.luz::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(380px circle at var(--mx) var(--my), var(--luz-cor), transparent 60%);
+  opacity: var(--luz-on, 0);
+  transition: opacity 0.4s ease;
+  z-index: 0;
+}
+
+.luz::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  background:
+    radial-gradient(240px circle at var(--mx) var(--my), var(--luz-borda), transparent 70%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: var(--luz-on, 0);
+  transition: opacity 0.4s ease;
+  z-index: 1;
+}
+
+.luz > * { position: relative; z-index: 2; }
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* Carregador */
+.carregador {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2.5px solid var(--cor-borda);
+  border-top-color: var(--cor-acento);
+  animation: girar 0.8s linear infinite;
+  margin: 80px auto;
+}
+
+@keyframes girar { to { transform: rotate(360deg); } }
+
+@keyframes trocaIcone {
+  from { opacity: 0; transform: translateY(8px) scale(0.6); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes respirar {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0.7; }
+  100% { transform: translate(-60px, 40px) scale(1.18); opacity: 1; }
+}
+
+@keyframes pulsar {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.45; }
+}
+
+@keyframes surgir {
+  from { opacity: 0; transform: translateY(12px) scale(0.85); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes entrarItem {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+
+/* ══════════════ Logo ══════════════ */
+.logo {
+  display: block;
+  flex-shrink: 0;
+  overflow: visible;
+  filter: drop-shadow(0 4px 10px color-mix(in srgb, var(--cor-acento) 40%, transparent));
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.logo-barra {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: logoBarra 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+}
+.logo-barra.b2 { animation-delay: 0.08s; }
+.logo-barra.b3 { animation-delay: 0.16s; }
+
+.logo-faisca {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: logoFaisca 3.2s ease-in-out infinite;
+}
+
+.logo-reflexo {
+  animation: logoReflexo 5s ease-in-out 1s infinite;
+}
+
+/* No hover: inclina, barras crescem de novo e o reflexo passa */
+:hover > .logo,
+.logo:hover { transform: rotate(-8deg) scale(1.08); }
+:hover > .logo .logo-barra { animation: logoBarra 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) backwards; }
+:hover > .logo .logo-barra.b2 { animation-delay: 0.07s; }
+:hover > .logo .logo-barra.b3 { animation-delay: 0.14s; }
+
+@keyframes logoBarra {
+  from { transform: scaleY(0.15); }
+  to   { transform: scaleY(1); }
+}
+
+@keyframes logoFaisca {
+  0%, 100% { transform: scale(0.7) rotate(0deg); opacity: 0.6; }
+  50%      { transform: scale(1.15) rotate(90deg); opacity: 1; }
+}
+
+@keyframes logoReflexo {
+  0%       { transform: rotate(20deg) translateX(0); }
+  30%, 100% { transform: rotate(20deg) translateX(70px); }
+}
+
+/* ══════════════ Revelação com desfoque ══════════════ */
+@keyframes revelar {
+  from { opacity: 0; transform: translateY(18px) scale(0.98); filter: blur(12px); }
+  to   { opacity: 1; transform: none; filter: blur(0); }
+}
+
+@keyframes revelarTexto {
+  from { opacity: 0; filter: blur(10px); letter-spacing: 0.02em; transform: translateY(6px); }
+  to   { opacity: 1; filter: blur(0); transform: none; }
+}
+
+@keyframes desfocarTroca {
+  0%   { filter: blur(14px); opacity: 0.2; transform: scale(0.96); }
+  100% { filter: blur(0); opacity: 1; transform: none; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); filter: blur(6px); }
+  to   { opacity: 1; transform: none; filter: blur(0); }
+}
+
+/* ══════════════ Texto sendo digitado ══════════════ */
+.digitando { white-space: pre-wrap; }
+
+.digitando-letra {
+  display: inline-block;
+  white-space: pre;
+  animation: letraEntra 0.28s cubic-bezier(0.2, 0, 0, 1);
+}
+
+@keyframes letraEntra {
+  from { opacity: 0; filter: blur(6px); transform: translateY(0.18em); }
+  to   { opacity: 1; filter: blur(0); transform: none; }
+}
+
+.digitando-resto { visibility: hidden; }
+
+.digitando-cursor {
+  display: inline-block;
+  width: 0.08em;
+  min-width: 2px;
+  height: 0.95em;
+  margin: 0 0.04em -0.1em;
+  border-radius: 2px;
+  background: var(--cor-acento);
+  box-shadow: 0 0 10px var(--cor-acento);
+  animation: cursorPisca 0.9s steps(1) infinite;
+}
+
+/* Ao terminar, o cursor some suavemente */
+.digitando.terminou .digitando-cursor {
+  animation: cursorSome 1.4s ease forwards;
+}
+
+@keyframes cursorPisca {
+  50% { opacity: 0; }
+}
+
+@keyframes cursorSome {
+  0%, 60% { opacity: 1; }
+  100%    { opacity: 0; width: 0; min-width: 0; margin: 0; }
+}
+
+/* Títulos que já digitam não precisam da revelação com desfoque */
+.titulo-pagina:has(.digitando),
+.di-pergunta:has(.digitando) { animation: none; }

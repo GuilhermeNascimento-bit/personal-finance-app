@@ -3,8 +3,8 @@
 // e "valor" (número), usado nas etapas de renda, despesas fixas e
 // despesas variáveis do onboarding.
 
-import { useState } from "react";
 import { useMoeda } from "../../context/MoedaContext";
+import { useIdioma } from "../../i18n/IdiomaContext";
 
 export default function ListaCategoriaValor({
   itens,
@@ -13,6 +13,7 @@ export default function ListaCategoriaValor({
   placeholderCategoria,
 }) {
   const { moeda } = useMoeda();
+  const { t } = useIdioma();
 
   function atualizarItem(indice, campo, valor) {
     const novosItens = itens.map((item, i) =>
@@ -72,7 +73,7 @@ export default function ListaCategoriaValor({
               step="0.01"
               value={item.valor}
               onChange={(e) => atualizarItem(indice, "valor", e.target.value)}
-              placeholder="0,00"
+              placeholder={moeda.codigo === "USD" ? "0.00" : "0,00"}
               className="input-valor"
             />
           </div>
@@ -80,7 +81,7 @@ export default function ListaCategoriaValor({
             type="button"
             className="botao-remover-item"
             onClick={() => removerItem(indice)}
-            aria-label="Remover item"
+            aria-label={t("comum.remover")}
           >
             ×
           </button>
@@ -88,7 +89,7 @@ export default function ListaCategoriaValor({
       ))}
 
       <button type="button" className="botao-adicionar-item" onClick={adicionarItem}>
-        + Adicionar item
+        + {t("ob.adicionarItem")}
       </button>
     </div>
   );

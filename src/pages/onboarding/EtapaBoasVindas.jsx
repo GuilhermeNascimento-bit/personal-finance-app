@@ -1,20 +1,22 @@
 // EtapaBoasVindas.jsx
-import { useState } from "react";
+import { useIdioma } from "../../i18n/IdiomaContext";
+import Logo from "../../components/Logo";
+import Digitando from "../../components/Digitando";
 
 export default function EtapaBoasVindas({ nome, aoAvancar }) {
+  const { t } = useIdioma();
   return (
     <div className="etapa">
-      <div className="icone-boas-vindas">$</div>
-      <h2>Bem-vindo{nome ? `, ${nome.split(" ")[0]}` : ""}!</h2>
+      <div className="logo-boas-vindas"><Logo tamanho={72} /></div>
+      <h2><Digitando texto={nome ? t("ob.bemVindoNome", { nome: nome.split(" ")[0] }) : t("ob.bemVindo")} atraso={600} /></h2>
       <p className="texto-etapa">
-        Vamos fazer algumas perguntas rápidas sobre suas receitas e despesas
-        do mês para já montar seu painel financeiro com dados reais.
+        {t("ob.intro")}
       </p>
       <p className="texto-etapa texto-secundario">
-        Leva menos de 2 minutos, e você pode editar tudo depois.
+        {t("ob.intro2")}
       </p>
       <button type="button" className="botao-primario" onClick={aoAvancar}>
-        Vamos começar
+        {t("ob.comecar")}
       </button>
     </div>
   );

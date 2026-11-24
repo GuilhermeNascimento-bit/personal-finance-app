@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { MOEDAS } from "../../context/MoedaContext";
+import { useIdioma } from "../../i18n/IdiomaContext";
 
 export default function EtapaMoeda({ moedaInicial, aoAvancar, aoVoltar }) {
   const [selecionada, setSelecionada] = useState(moedaInicial || "BRL");
+  const { t } = useIdioma();
 
   function confirmar() {
     aoAvancar(selecionada);
@@ -10,9 +12,9 @@ export default function EtapaMoeda({ moedaInicial, aoAvancar, aoVoltar }) {
 
   return (
     <div className="etapa">
-      <h2>Qual é a sua moeda?</h2>
+      <h2>{t("ob.moedaTitulo")}</h2>
       <p className="texto-etapa">
-        Escolha a moeda principal que você usa no dia a dia. Você pode trocar nas configurações depois.
+        {t("ob.moedaTexto")}
       </p>
 
       <div className="grade-moeda-onboarding">
@@ -25,17 +27,17 @@ export default function EtapaMoeda({ moedaInicial, aoAvancar, aoVoltar }) {
           >
             <span className="moeda-ob-bandeira">{m.bandeira}</span>
             <span className="moeda-ob-simbolo">{m.simbolo}</span>
-            <span className="moeda-ob-nome">{m.nome}</span>
+            <span className="moeda-ob-nome">{t(`config.moeda_${m.codigo}`)}</span>
           </button>
         ))}
       </div>
 
       <div className="botoes-navegacao">
         <button type="button" className="botao-secundario" onClick={aoVoltar}>
-          Voltar
+          {t("comum.voltar")}
         </button>
         <button type="button" className="botao-primario" onClick={confirmar}>
-          Continuar
+          {t("comum.continuar")}
         </button>
       </div>
     </div>

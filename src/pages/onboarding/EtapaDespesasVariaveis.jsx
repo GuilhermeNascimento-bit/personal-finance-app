@@ -1,12 +1,14 @@
 // EtapaDespesasVariaveis.jsx
 import { useState } from "react";
 import ListaCategoriaValor from "./ListaCategoriaValor";
+import { useIdioma } from "../../i18n/IdiomaContext";
 
-const SUGESTOES = ["Comida", "Transporte", "Lazer", "Saúde", "Compras"];
 
 export default function EtapaDespesasVariaveis({ valoresIniciais, aoAvancar, aoVoltar }) {
+  const { t } = useIdioma();
+  const SUGESTOES = t("ob.variaveisSugestoes");
   const [itens, setItens] = useState(
-    valoresIniciais.length > 0 ? valoresIniciais : [{ categoria: "Comida", valor: "" }]
+    valoresIniciais.length > 0 ? valoresIniciais : [{ categoria: SUGESTOES[0], valor: "" }]
   );
 
   function continuar() {
@@ -18,24 +20,22 @@ export default function EtapaDespesasVariaveis({ valoresIniciais, aoAvancar, aoV
 
   return (
     <div className="etapa">
-      <h2>Despesas variáveis do mês</h2>
-      <p className="texto-etapa">
-        Gastos do dia a dia que costumam mudar de valor, como comida e transporte.
-      </p>
+      <h2>{t("ob.variaveisTitulo")}</h2>
+      <p className="texto-etapa">{t("ob.variaveisTexto")}</p>
 
       <ListaCategoriaValor
         itens={itens}
         aoMudar={setItens}
         categoriasSugeridas={SUGESTOES}
-        placeholderCategoria="Ex: Comida"
+        placeholderCategoria={t("ob.variaveisPlaceholder")}
       />
 
       <div className="botoes-navegacao">
         <button type="button" className="botao-secundario" onClick={aoVoltar}>
-          Voltar
+          {t("comum.voltar")}
         </button>
         <button type="button" className="botao-primario" onClick={continuar}>
-          Continuar
+          {t("comum.continuar")}
         </button>
       </div>
     </div>

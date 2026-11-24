@@ -1,13 +1,17 @@
 import { useEffect, useState } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { MoedaProvider } from "./context/MoedaContext";
+import { IdiomaProvider, useIdioma } from "./i18n/IdiomaContext";
 import PaginaLogin from "./pages/PaginaLogin";
 import OnboardingWizard from "./pages/onboarding/OnboardingWizard";
 import Dashboard from "./pages/dashboard/Dashboard";
 import { escutarTransacoes } from "./firebase/transacoes";
+import useLuzReativa from "./hooks/useLuzReativa";
 
 function ConteudoApp() {
   const { usuario, carregando } = useAuth();
+  const { t } = useIdioma();
+  useLuzReativa();
   const [verificandoTransacoes, setVerificandoTransacoes] = useState(true);
   const [precisaOnboarding, setPrecisaOnboarding] = useState(false);
   const [onboardingConcluido, setOnboardingConcluido] = useState(false);
@@ -24,7 +28,7 @@ function ConteudoApp() {
   if (carregando || verificandoTransacoes) {
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--cor-fundo-pagina)" }}>
-        <p style={{ color: "var(--cor-texto-secundario)", fontFamily: "sans-serif" }}>Carregando...</p>
+        <div className="carregador" aria-label={t("comum.carregando")} />
       </div>
     );
   }
@@ -47,11 +51,13 @@ function ConteudoApp() {
 
 function App() {
   return (
-    <MoedaProvider>
-      <AuthProvider>
-        <ConteudoApp />
-      </AuthProvider>
-    </MoedaProvider>
+    <IdiomaProvider>
+      <MoedaProvider>
+        <AuthProvider>
+          <ConteudoApp />
+        </AuthProvider>
+      </MoedaProvider>
+    </IdiomaProvider>
   );
 }
 

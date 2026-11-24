@@ -2,11 +2,13 @@ import { useState } from "react";
 import { adicionarTransacao, editarTransacao } from "../../firebase/transacoes";
 import { adicionarRecorrente } from "../../firebase/recorrentes";
 import { useMoeda } from "../../context/MoedaContext";
+import { useIdioma } from "../../i18n/IdiomaContext";
 
 const OPCOES_PARCELAS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
 export default function ModalTransacao({ uid, transacao, aoFechar, tipoInicial = "despesa" }) {
   const editando = !!transacao;
+  const { t } = useIdioma();
 
   const [tipo, setTipo] = useState(transacao?.tipo || tipoInicial);
   const [categoria, setCategoria] = useState(transacao?.categoria || "");
@@ -27,15 +29,15 @@ export default function ModalTransacao({ uid, transacao, aoFechar, tipoInicial =
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
 
-  const { formatarValor } = useMoeda();
+  const { formatarValor, moeda } = useMoeda();
   const mostrarPagamento = tipo === "despesa";
   const mostrarParcelas = mostrarPagamento && formaPagamento === "credito" && !editando;
   const isParcelado = editando && (transacao?.parcelasTotal || 1) > 1;
 
   async function handleSalvar() {
-    if (!categoria.trim()) return setErro("Informe a categoria.");
-    if (!valor || Number(valor) <= 0) return setErro("Informe um valor válido.");
-    if (!data) return setErro("Informe a data.");
+    if (!categoria.trim()) return setErro(t("modal.erroCategoria"));
+    if (!valor || Number(valor) <= 0) return setErro(t("modal.erroValor"));
+    if (!data) return setErro(t("modal.erroData"));
 
     setSalvando(true);
     setErro("");
@@ -101,58 +103,45 @@ export default function ModalTransacao({ uid, transacao, aoFechar, tipoInicial =
 
       aoFechar();
     } catch {
-      setErro("Não foi possível salvar. Tente novamente.");
+      setErro(t("modal.erroSalvar"));
       setSalvando(false);
     }
   }
 
   return (
     <div className="overlay-modal" onClick={(e) => e.target === e.currentTarget && aoFechar()}>
-      <div className="modal">
+      <div className={`modal modal-transacao tom-${tipo}`}>
         <div className="modal-cabecalho">
-          <h2>{editando ? "Editar transação" : "Nova transação"}</h2>
-          <button className="botao-fechar-modal" onClick={aoFechar}>✕</button>
+          <h2>{editando ? t("modal.editar") : t("comum.novaTransacao")}</h2>
+          <button className="botao-fechar-modal" onClick={aoFechar} aria-label={t("comum.fechar")}>✕</button>
         </div>
 
         <div className="modal-corpo">
           {/* Tipo */}
           <div className="campo-modal">
-            <label>Tipo</label>
-            <div className="toggle-tipo">
+            <div className="toggle-tipo toggle-tipo-transacao" role="radiogroup" aria-label={t("modal.tipo")}>
               <button
                 type="button"
-                className={`toggle-opcao ${tipo === "despesa" ? "ativo" : ""}`}
+                className={`toggle-opcao op-despesa ${tipo === "despesa" ? "ativo" : ""}`}
                 onClick={() => { setTipo("despesa"); setFormaPagamento("dinheiro"); setParcelas(1); }}
               >
-                ↓ Despesa
+                ↓ {t("comum.despesa")}
               </button>
               <button
                 type="button"
-                className={`toggle-opcao ${tipo === "receita" ? "ativo" : ""}`}
+                className={`toggle-opcao op-receita ${tipo === "receita" ? "ativo" : ""}`}
                 onClick={() => setTipo("receita")}
               >
-                ↑ Receita
+                ↑ {t("comum.receita")}
               </button>
             </div>
           </div>
 
-          {/* Categoria */}
-          <div className="campo-modal">
-            <label htmlFor="categoria">Categoria</label>
-            <input
-              id="categoria"
-              type="text"
-              value={categoria}
-              onChange={(e) => setCategoria(e.target.value)}
-              placeholder="Ex: Aluguel, Salário..."
-            />
-          </div>
-
-          {/* Valor */}
-          <div className="campo-modal">
-            <label htmlFor="valor">Valor</label>
+          {/* Valor (destaque) */}
+          <div className="campo-modal campo-valor-grande">
+            <label htmlFor="valor">{t("modal.valor")}</label>
             <div className="input-com-prefixo">
-              <span>R$</span>
+              <span>{moeda.simbolo}</span>
               <input
                 id="valor"
                 type="number"
@@ -161,14 +150,27 @@ export default function ModalTransacao({ uid, transacao, aoFechar, tipoInicial =
                 step="0.01"
                 value={valor}
                 onChange={(e) => setValor(e.target.value)}
-                placeholder="0,00"
+                placeholder={moeda.codigo === "USD" ? "0.00" : "0,00"}
+                autoFocus
               />
             </div>
           </div>
 
+          {/* Categoria */}
+          <div className="campo-modal">
+            <label htmlFor="categoria">{t("modal.categoria")}</label>
+            <input
+              id="categoria"
+              type="text"
+              value={categoria}
+              onChange={(e) => setCategoria(e.target.value)}
+              placeholder={t("modal.placeholderCategoria")}
+            />
+          </div>
+
           {/* Data */}
           <div className="campo-modal">
-            <label htmlFor="data">Data</label>
+            <label htmlFor="data">{t("modal.data")}</label>
             <input
               id="data"
               type="date"
@@ -180,14 +182,14 @@ export default function ModalTransacao({ uid, transacao, aoFechar, tipoInicial =
           {/* Recorrência — só para novas transações não parceladas */}
           {!editando && !(mostrarParcelas && parcelas > 1) && (
             <div className="campo-modal">
-              <label>Frequência</label>
+              <label>{t("modal.frequencia")}</label>
               <div className="toggle-tipo">
                 <button
                   type="button"
                   className={`toggle-opcao ${!ehRecorrente ? "ativo" : ""}`}
                   onClick={() => setEhRecorrente(false)}
                 >
-                  Pontual
+                  {t("modal.pontual")}
                 </button>
                 <button
                   type="button"
@@ -197,12 +199,12 @@ export default function ModalTransacao({ uid, transacao, aoFechar, tipoInicial =
                     setDiaRecorrente(data ? String(new Date(data + "T12:00:00").getDate()) : String(new Date().getDate()));
                   }}
                 >
-                  Repetir todo mês
+                  {t("modal.repetir")}
                 </button>
               </div>
               {ehRecorrente && (
                 <div className="recorrente-dia-row">
-                  <span className="recorrente-dia-label">Todo dia</span>
+                  <span className="recorrente-dia-label">{t("modal.todoDia")}</span>
                   <input
                     type="number"
                     className="recorrente-dia-input"
@@ -211,7 +213,7 @@ export default function ModalTransacao({ uid, transacao, aoFechar, tipoInicial =
                     value={diaRecorrente}
                     onChange={(e) => setDiaRecorrente(e.target.value)}
                   />
-                  <span className="recorrente-dia-label">de cada mês</span>
+                  <span className="recorrente-dia-label">{t("modal.deCadaMes")}</span>
                 </div>
               )}
             </div>
@@ -219,21 +221,21 @@ export default function ModalTransacao({ uid, transacao, aoFechar, tipoInicial =
 
           {/* Status */}
           <div className="campo-modal">
-            <label>Status</label>
+            <label>{t("modal.status")}</label>
             <div className="toggle-tipo">
               <button
                 type="button"
                 className={`toggle-opcao ${status === "pendente" ? "ativo" : ""}`}
                 onClick={() => setStatus("pendente")}
               >
-                Pendente
+                {t("comum.pendente")}
               </button>
               <button
                 type="button"
                 className={`toggle-opcao ${status === "pago" ? "ativo" : ""}`}
                 onClick={() => setStatus("pago")}
               >
-                {tipo === "receita" ? "Recebido" : "Pago"}
+                {tipo === "receita" ? t("modal.recebido") : t("comum.pago")}
               </button>
             </div>
           </div>
@@ -241,28 +243,28 @@ export default function ModalTransacao({ uid, transacao, aoFechar, tipoInicial =
           {/* Forma de pagamento — só para despesas */}
           {mostrarPagamento && (
             <div className="campo-modal">
-              <label>Forma de pagamento</label>
+              <label>{t("modal.formaPagamento")}</label>
               <div className="toggle-tipo">
                 <button
                   type="button"
                   className={`toggle-opcao ${formaPagamento === "dinheiro" ? "ativo" : ""}`}
                   onClick={() => { setFormaPagamento("dinheiro"); setParcelas(1); }}
                 >
-                  Dinheiro
+                  {t("comum.dinheiro")}
                 </button>
                 <button
                   type="button"
                   className={`toggle-opcao ${formaPagamento === "debito" ? "ativo" : ""}`}
                   onClick={() => { setFormaPagamento("debito"); setParcelas(1); }}
                 >
-                  Débito
+                  {t("comum.debito")}
                 </button>
                 <button
                   type="button"
                   className={`toggle-opcao ${formaPagamento === "credito" ? "ativo" : ""}`}
                   onClick={() => setFormaPagamento("credito")}
                 >
-                  Crédito
+                  {t("comum.credito")}
                 </button>
               </div>
             </div>
@@ -271,7 +273,7 @@ export default function ModalTransacao({ uid, transacao, aoFechar, tipoInicial =
           {/* Parcelas — crédito, apenas criação */}
           {mostrarParcelas && (
             <div className="campo-modal">
-              <label>Parcelas</label>
+              <label>{t("modal.parcelas")}</label>
               <div className="grade-parcelas">
                 {OPCOES_PARCELAS.map((n) => (
                   <button
@@ -286,11 +288,7 @@ export default function ModalTransacao({ uid, transacao, aoFechar, tipoInicial =
               </div>
               {parcelas > 1 && (
                 <p className="parcelas-info">
-                  {parcelas}× de{" "}
-                  <strong>
-                    {formatarValor(Number(valor) / parcelas || 0)}
-                  </strong>{" "}
-                  — lançamentos criados para os próximos meses
+                  {t("modal.parcelasInfo", { n: parcelas, valor: formatarValor(Number(valor) / parcelas || 0) })}
                 </p>
               )}
             </div>
@@ -299,7 +297,7 @@ export default function ModalTransacao({ uid, transacao, aoFechar, tipoInicial =
           {/* Aviso ao editar parcela */}
           {isParcelado && (
             <p className="parcelas-info aviso">
-              Parcela {transacao.parcelaAtual}/{transacao.parcelasTotal} — edite cada parcela individualmente.
+              {t("modal.avisoParcela", { atual: transacao.parcelaAtual, total: transacao.parcelasTotal })}
             </p>
           )}
 
@@ -308,7 +306,7 @@ export default function ModalTransacao({ uid, transacao, aoFechar, tipoInicial =
 
         <div className="modal-rodape">
           <button type="button" className="botao-cancelar" onClick={aoFechar}>
-            Cancelar
+            {t("comum.cancelar")}
           </button>
           <button
             type="button"
@@ -317,12 +315,12 @@ export default function ModalTransacao({ uid, transacao, aoFechar, tipoInicial =
             disabled={salvando}
           >
             {salvando
-              ? "Salvando..."
+              ? t("comum.salvando")
               : editando
-              ? "Salvar alterações"
+              ? t("modal.salvarAlteracoes")
               : parcelas > 1
-              ? `Criar ${parcelas} parcelas`
-              : "Adicionar"}
+              ? t("modal.criarParcelas", { n: parcelas })
+              : t("modal.adicionar")}
           </button>
         </div>
       </div>

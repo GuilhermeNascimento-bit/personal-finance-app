@@ -2,8 +2,9 @@ import { useState } from "react";
 import { calcularRelatorio } from "../../firebase/transacoes";
 import { useMoeda } from "../../context/MoedaContext";
 import "./recomendacoes.css";
+import { useIdioma } from "../../i18n/IdiomaContext";
 
-function gerarDicas(relatorio, transacoes, fmt) {
+function gerarDicas(relatorio, transacoes, fmt, t) {
   const { totalReceitas, totalDespesasPagas, saldoReal, despesas } = relatorio;
   const dicas = [];
 
@@ -18,22 +19,22 @@ function gerarDicas(relatorio, transacoes, fmt) {
   if (percentualGasto > 80) {
     dicas.push({
       tipo: "alerta",
-      titulo: "Gastos muito altos",
-      texto: `Você está gastando ${percentualGasto.toFixed(0)}% da sua renda. O ideal é manter abaixo de 80%, guardando pelo menos 20% para reservas.`,
+      titulo: t("rec.altosTitulo"),
+      texto: t("rec.altosTexto", { pct: percentualGasto.toFixed(0) }),
       reducao: null,
     });
   } else if (percentualGasto > 60) {
     dicas.push({
       tipo: "atencao",
-      titulo: "Gastos elevados",
-      texto: `Seus gastos representam ${percentualGasto.toFixed(0)}% da renda. Tente reduzir para abaixo de 60% para criar uma reserva de emergência.`,
+      titulo: t("rec.elevadosTitulo"),
+      texto: t("rec.elevadosTexto", { pct: percentualGasto.toFixed(0) }),
       reducao: null,
     });
   } else {
     dicas.push({
       tipo: "positivo",
-      titulo: "Gastos sob controle",
-      texto: `Parabéns! Você está gastando apenas ${percentualGasto.toFixed(0)}% da sua renda — bem abaixo do recomendado de 80%.`,
+      titulo: t("rec.controleTitulo"),
+      texto: t("rec.controleTexto", { pct: percentualGasto.toFixed(0) }),
       reducao: null,
     });
   }
@@ -48,14 +49,16 @@ function gerarDicas(relatorio, transacoes, fmt) {
       transporte: 15,
       lazer: 10, entretenimento: 10,
       streaming: 5, assinaturas: 5,
+      rent: 30, housing: 30, food: 15, groceries: 15,
+      transport: 15, leisure: 10, entertainment: 10, subscriptions: 5,
     };
     const limite = limites[nomeCat.toLowerCase()] || 20;
     if (pct > limite) {
       const reducaoIdeal = valorCat - (totalReceitas * limite / 100);
       dicas.push({
         tipo: "alerta",
-        titulo: `${nomeCat} acima do ideal`,
-        texto: `Você gasta ${fmt(valorCat)} com ${nomeCat} (${pct.toFixed(0)}% da renda). O recomendado é até ${limite}%. Reduzir ${fmt(reducaoIdeal)}/mês liberaria espaço para investimentos.`,
+        titulo: t("rec.categoriaTitulo", { cat: nomeCat }),
+        texto: t("rec.categoriaTexto", { valor: fmt(valorCat), cat: nomeCat, pct: pct.toFixed(0), limite, reducao: fmt(reducaoIdeal) }),
         reducao: reducaoIdeal,
         categoria: nomeCat,
       });
@@ -66,8 +69,8 @@ function gerarDicas(relatorio, transacoes, fmt) {
     const meta3meses = totalDespesasPagas * 3;
     dicas.push({
       tipo: "atencao",
-      titulo: "Reserva de emergência",
-      texto: `Sua reserva ideal seria de ${fmt(meta3meses)} (3 meses de despesas). Guardar ${fmt(totalDespesasPagas * 0.1)}/mês te levaria lá em 30 meses.`,
+      titulo: t("rec.reservaTitulo"),
+      texto: t("rec.reservaTexto", { meta: fmt(meta3meses), mensal: fmt(totalDespesasPagas * 0.1) }),
       reducao: null,
     });
   }
@@ -75,26 +78,26 @@ function gerarDicas(relatorio, transacoes, fmt) {
   if (saldoReal > totalReceitas * 0.2) {
     dicas.push({
       tipo: "positivo",
-      titulo: "Bom momento para investir",
-      texto: `Você tem ${fmt(saldoReal)} de saldo positivo. Considere alocar parte em renda fixa (Tesouro Direto, CDB) ou fundos de emergência.`,
+      titulo: t("rec.investirTitulo"),
+      texto: t("rec.investirTexto", { saldo: fmt(saldoReal) }),
       reducao: null,
     });
   }
 
-  const atrasadas = transacoes.filter((t) => {
-    if (t.tipo !== "despesa" || t.status !== "pendente") return false;
-    const d = new Date(t.data);
+  const atrasadas = transacoes.filter((x) => {
+    if (x.tipo !== "despesa" || x.status !== "pendente") return false;
+    const d = new Date(x.data);
     d.setHours(0, 0, 0, 0);
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
     return d < hoje;
   });
   if (atrasadas.length > 0) {
-    const totalAtrasado = atrasadas.reduce((s, t) => s + t.valor, 0);
+    const totalAtrasado = atrasadas.reduce((s, x) => s + x.valor, 0);
     dicas.push({
       tipo: "alerta",
-      titulo: `${atrasadas.length} despesa(s) atrasada(s)`,
-      texto: `Você tem ${fmt(totalAtrasado)} em despesas vencidas. Pague o quanto antes para evitar juros e impacto no seu crédito.`,
+      titulo: t("rec.atrasadasTitulo", { n: atrasadas.length }),
+      texto: t("rec.atrasadasTexto", { valor: fmt(totalAtrasado) }),
       reducao: null,
     });
   }
@@ -104,9 +107,10 @@ function gerarDicas(relatorio, transacoes, fmt) {
 
 function CardDica({ dica, indice }) {
   const { formatarValor: fmt } = useMoeda();
+  const { t } = useIdioma();
   const icones = { alerta: "⚠️", atencao: "💡", positivo: "✅" };
   return (
-    <div className={`card-dica card-dica-${dica.tipo}`}
+    <div className={`card-dica luz card-dica-${dica.tipo}`}
       style={{ animationDelay: `${indice * 0.08}s` }}>
       <div className="dica-topo">
         <span className="dica-icone">{icones[dica.tipo]}</span>
@@ -115,8 +119,8 @@ function CardDica({ dica, indice }) {
       <p className="dica-texto">{dica.texto}</p>
       {dica.reducao && (
         <div className="dica-reducao">
-          <span>Redução sugerida:</span>
-          <strong>{fmt(dica.reducao)}/mês</strong>
+          <span>{t("rec.reducao")}</span>
+          <strong>{t("metas.porMes", { valor: fmt(dica.reducao) })}</strong>
         </div>
       )}
     </div>
@@ -124,19 +128,20 @@ function CardDica({ dica, indice }) {
 }
 
 function AnaliseIA() {
+  const { t } = useIdioma();
   return (
     <div className="secao-ia">
       <div className="ia-cabecalho">
         <div>
-          <h3 className="titulo-secao">Análise por IA</h3>
+          <h3 className="titulo-secao">{t("rec.iaTitulo")}</h3>
           <p className="subtitulo-secao">
-            Recomendações personalizadas geradas pelo Claude com base nos seus dados.
+            {t("rec.iaSub")}
           </p>
         </div>
       </div>
       <div className="ia-resultado">
         <p className="ia-erro" style={{ background: "var(--cor-acento-fundo-suave)", color: "var(--cor-acento)", borderRadius: 8, padding: "12px 14px" }}>
-          ✦ Funcionalidade em breve — a análise por IA requer uma chave de API configurada no servidor. Consulte a documentação para ativar.
+          ✦ {t("rec.iaEmBreve")}
         </p>
       </div>
     </div>
@@ -145,15 +150,16 @@ function AnaliseIA() {
 
 export default function PaginaRecomendacoes({ transacoes }) {
   const { formatarValor: fmt } = useMoeda();
+  const { t } = useIdioma();
   const relatorio = calcularRelatorio(transacoes);
-  const dicas = gerarDicas(relatorio, transacoes, fmt);
+  const dicas = gerarDicas(relatorio, transacoes, fmt, t);
 
   return (
     <div className="pagina-recomendacoes">
       <section className="secao-dicas">
-        <h3 className="titulo-secao">Diagnóstico financeiro</h3>
+        <h3 className="titulo-secao">{t("rec.diagnostico")}</h3>
         <p className="subtitulo-secao">
-          Calculado com base nas suas receitas e despesas do período.
+          {t("rec.diagnosticoSub")}
         </p>
         <div className="grade-dicas">
           {dicas.map((dica, i) => (

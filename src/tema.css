@@ -1,105 +1,212 @@
-/* tema.css */
-/* Variáveis de cor usadas em toda a aplicação (login, onboarding, dashboard).
-   O tema muda automaticamente com base na preferência do sistema
-   (prefers-color-scheme), sem precisar de botão ou JavaScript. */
+/* tema.css — design tokens do redesign (minimalista / clean)
+   Cores, tipografia, raios, sombras e movimento usados em todo o app.
+   Tema: segue o sistema (prefers-color-scheme) ou o override
+   html[data-tema="claro" | "escuro"] definido em Configurações.
+   Obs.: --cor-acento / --cor-acento-hover / --cor-acento-fundo-suave podem ser
+   sobrescritos inline pela escolha de cor do usuário; tudo que deriva do acento
+   usa color-mix() para acompanhar essa escolha. */
 
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+/* ── Tokens que não mudam com o tema ── */
 :root {
-  --cor-fundo-pagina: #f4f6f3;
-  --cor-fundo-cartao: #ffffff;
-  --cor-fundo-input: #fbfcfa;
-  --cor-fundo-input-foco: #ffffff;
-  --cor-fundo-secao: #f4f6f3;
+  --fonte-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --fonte-mono: ui-monospace, "SF Mono", Consolas, monospace;
 
-  --cor-texto-principal: #1f2920;
-  --cor-texto-secundario: #6b7268;
-  --cor-texto-label: #3a4039;
+  --raio-xs: 4px;
+  --raio-sm: 6px;
+  --raio-md: 8px;
+  --raio-lg: 12px;
+  --raio-xl: 16px;
+  --raio-total: 999px;
 
-  --cor-borda: #d9ddd6;
-  --cor-borda-cartao: #e4e7e0;
+  --transicao-rapida: 120ms ease;
+  --transicao: 180ms cubic-bezier(0.2, 0, 0, 1);
 
-  --cor-acento: #1d9e75;
-  --cor-acento-hover: #0f6e56;
-  --cor-acento-fundo-suave: #e1f5ee;
+  --cor-sobre-acento: #ffffff;
+  --cor-perigo: #dc4446;
+  --cor-receita: var(--cor-sucesso-texto);
+  --cor-despesa: var(--cor-alerta-texto);
 
-  --cor-erro-fundo: #fcebeb;
-  --cor-erro-texto: #791f1f;
-
-  --cor-sucesso-texto: #0f6e56;
-  --cor-alerta-texto: #993c1d;
-
-  --cor-sombra-cartao: 0 1px 3px rgba(0, 0, 0, 0.06);
+  /* Paleta categórica dos gráficos (harmonizada, funciona nos dois temas) */
+  --grafico-1: #1f9e70;
+  --grafico-2: #e0703f;
+  --grafico-3: #6f6fd8;
+  --grafico-4: #d4a03a;
+  --grafico-5: #d0597f;
+  --grafico-6: #4b9dc4;
+  --grafico-7: #9a9a94;
+  --grafico-receita: var(--cor-acento);
+  --grafico-despesa: #e0703f;
 }
 
-/* Override manual via data-tema="claro" (força tema claro sobre qualquer media query) */
+/* ── Tema claro (padrão) ── */
+:root,
 html[data-tema="claro"] {
-  --cor-fundo-pagina: #f4f6f3;
+  color-scheme: light;
+
+  --cor-fundo-pagina: #ffffff;
+  --cor-superficie: #f5f5f3;
+  --cor-superficie-forte: #ebebe8;
+  --hero-fundo:
+    radial-gradient(120% 130% at 100% 0%, color-mix(in srgb, var(--cor-acento) 17%, #fff) 0%, transparent 60%),
+    radial-gradient(90% 120% at 0% 100%, color-mix(in srgb, var(--cor-acento) 7%, #fff) 0%, transparent 55%),
+    #ffffff;
+  --hero-base: #ffffff;
+  --hero-borda: var(--cor-borda-cartao);
+  --hero-texto: #17181a;
+  --hero-texto-2: rgba(23, 24, 26, 0.58);
+  --hero-texto-3: rgba(23, 24, 26, 0.42);
+  --hero-linha: rgba(23, 24, 26, 0.08);
+  --hero-vidro: rgba(23, 24, 26, 0.04);
+  --hero-vidro-hover: rgba(23, 24, 26, 0.08);
+  --hero-vidro-borda: rgba(23, 24, 26, 0.1);
+  --hero-pontos: rgba(23, 24, 26, 0.08);
+  --hero-luz-spot: color-mix(in srgb, var(--cor-acento) 12%, transparent);
+  --hero-luz-borda: color-mix(in srgb, var(--cor-acento) 60%, transparent);
+  --hero-receita: #0a7a56;
+  --hero-despesa: #c4521f;
+  --hero-negativo: #b4441c;
+  --hero-sombra: 0 28px 56px -32px color-mix(in srgb, var(--cor-acento) 55%, transparent), 0 2px 8px rgba(16, 17, 19, 0.05);
+  --hero-brilho: color-mix(in srgb, var(--cor-acento) 28%, transparent);
+  --luz-cor: color-mix(in srgb, var(--cor-acento) 9%, transparent);
+  --luz-borda: color-mix(in srgb, var(--cor-acento) 55%, transparent);
+  --orbe-opacidade: 0.5;
   --cor-fundo-cartao: #ffffff;
-  --cor-fundo-input: #fbfcfa;
+  --cor-fundo-input: #ffffff;
   --cor-fundo-input-foco: #ffffff;
-  --cor-fundo-secao: #f4f6f3;
-  --cor-texto-principal: #1f2920;
-  --cor-texto-secundario: #6b7268;
-  --cor-texto-label: #3a4039;
-  --cor-borda: #d9ddd6;
-  --cor-borda-cartao: #e4e7e0;
-  --cor-acento: #1d9e75;
-  --cor-acento-hover: #0f6e56;
-  --cor-acento-fundo-suave: #e1f5ee;
-  --cor-erro-fundo: #fcebeb;
-  --cor-erro-texto: #791f1f;
-  --cor-sucesso-texto: #0f6e56;
-  --cor-alerta-texto: #993c1d;
-  --cor-sombra-cartao: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --cor-fundo-secao: #f2f2ef;
+
+  --cor-texto-principal: #17181a;
+  --cor-texto-secundario: #6e6f73;
+  --cor-texto-label: #3b3c40;
+
+  --cor-borda: #e2e2de;
+  --cor-borda-cartao: #ebebe7;
+
+  --cor-acento: #0e8a63;
+  --cor-acento-hover: #0a6e4f;
+  --cor-acento-fundo-suave: #e7f4ee;
+
+  --cor-erro-fundo: #fdeeee;
+  --cor-erro-texto: #a12a2a;
+
+  --cor-sucesso-texto: #0a7a56;
+  --cor-alerta-texto: #b4441c;
+
+  --cor-sombra-cartao: 0 1px 2px rgba(16, 17, 19, 0.04);
+  --sombra-flutuante: 0 12px 32px -8px rgba(16, 17, 19, 0.16), 0 2px 6px rgba(16, 17, 19, 0.05);
+  --cor-overlay: rgba(16, 17, 19, 0.32);
 }
 
-/* Override manual via data-tema="escuro" */
+/* ── Tema escuro ── */
 html[data-tema="escuro"] {
-  --cor-fundo-pagina: #15171a;
-  --cor-fundo-cartao: #1e2124;
-  --cor-fundo-input: #26292d;
-  --cor-fundo-input-foco: #2c3034;
-  --cor-fundo-secao: #26292d;
-  --cor-texto-principal: #ededee;
-  --cor-texto-secundario: #9aa09c;
-  --cor-texto-label: #c5c9c4;
-  --cor-borda: #34383c;
-  --cor-borda-cartao: #2e3236;
-  --cor-acento: #2bbf8e;
-  --cor-acento-hover: #3fd9a4;
-  --cor-acento-fundo-suave: rgba(43, 191, 142, 0.12);
-  --cor-erro-fundo: rgba(226, 75, 74, 0.12);
-  --cor-erro-texto: #f29a99;
-  --cor-sucesso-texto: #3fd9a4;
-  --cor-alerta-texto: #e8a978;
-  --cor-sombra-cartao: 0 1px 3px rgba(0, 0, 0, 0.4);
+  color-scheme: dark;
+
+  --cor-fundo-pagina: #09090b;
+  --cor-superficie: #141417;
+  --cor-superficie-forte: #1d1d21;
+  --hero-fundo: #18191d;
+  --hero-base: #18191d;
+  --hero-borda: rgba(255, 255, 255, 0.06);
+  --hero-texto: #ffffff;
+  --hero-texto-2: rgba(255, 255, 255, 0.55);
+  --hero-texto-3: rgba(255, 255, 255, 0.42);
+  --hero-linha: rgba(255, 255, 255, 0.1);
+  --hero-vidro: rgba(255, 255, 255, 0.06);
+  --hero-vidro-hover: rgba(255, 255, 255, 0.14);
+  --hero-vidro-borda: rgba(255, 255, 255, 0.13);
+  --hero-pontos: rgba(255, 255, 255, 0.07);
+  --hero-luz-spot: rgba(255, 255, 255, 0.11);
+  --hero-luz-borda: rgba(255, 255, 255, 0.5);
+  --hero-receita: #4fd8a3;
+  --hero-despesa: #ff9a6b;
+  --hero-negativo: #ffb08a;
+  --hero-sombra: 0 30px 60px -30px color-mix(in srgb, var(--cor-acento) 50%, transparent), 0 18px 36px -18px rgba(0, 0, 0, 0.5);
+  --hero-brilho: color-mix(in srgb, var(--cor-acento) 45%, transparent);
+  --luz-cor: color-mix(in srgb, var(--cor-acento) 13%, transparent);
+  --luz-borda: color-mix(in srgb, var(--cor-acento) 70%, transparent);
+  --orbe-opacidade: 0.38;
+  --cor-fundo-cartao: #16171a;
+  --cor-fundo-input: #1c1d21;
+  --cor-fundo-input-foco: #212226;
+  --cor-fundo-secao: #1c1d21;
+
+  --cor-texto-principal: #f2f2f3;
+  --cor-texto-secundario: #9a9ba1;
+  --cor-texto-label: #c8c9cd;
+
+  --cor-borda: #2a2b30;
+  --cor-borda-cartao: #222327;
+
+  --cor-acento: #1f9e70;
+  --cor-acento-hover: #27b382;
+  --cor-acento-fundo-suave: rgba(52, 197, 143, 0.13);
+
+  --cor-erro-fundo: rgba(220, 68, 70, 0.14);
+  --cor-erro-texto: #f39b9b;
+
+  --cor-sucesso-texto: #4fd8a3;
+  --cor-alerta-texto: #f0a874;
+
+  --cor-sombra-cartao: none;
+  --sombra-flutuante: 0 16px 40px -8px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --cor-overlay: rgba(0, 0, 0, 0.6);
 }
 
-/* Tema escuro automático (sem override manual) */
+/* Escuro automático (quando não há override manual) */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --cor-fundo-pagina: #15171a;
-    --cor-fundo-cartao: #1e2124;
-    --cor-fundo-input: #26292d;
-    --cor-fundo-input-foco: #2c3034;
-    --cor-fundo-secao: #26292d;
+  :root:not([data-tema="claro"]) {
+    color-scheme: dark;
 
-    --cor-texto-principal: #ededee;
-    --cor-texto-secundario: #9aa09c;
-    --cor-texto-label: #c5c9c4;
+    --cor-fundo-pagina: #09090b;
+    --cor-superficie: #141417;
+    --cor-superficie-forte: #1d1d21;
+    --hero-fundo: #18191d;
+    --hero-base: #18191d;
+    --hero-borda: rgba(255, 255, 255, 0.06);
+    --hero-texto: #ffffff;
+    --hero-texto-2: rgba(255, 255, 255, 0.55);
+    --hero-texto-3: rgba(255, 255, 255, 0.42);
+    --hero-linha: rgba(255, 255, 255, 0.1);
+    --hero-vidro: rgba(255, 255, 255, 0.06);
+    --hero-vidro-hover: rgba(255, 255, 255, 0.14);
+    --hero-vidro-borda: rgba(255, 255, 255, 0.13);
+    --hero-pontos: rgba(255, 255, 255, 0.07);
+    --hero-luz-spot: rgba(255, 255, 255, 0.11);
+    --hero-luz-borda: rgba(255, 255, 255, 0.5);
+    --hero-receita: #4fd8a3;
+    --hero-despesa: #ff9a6b;
+    --hero-negativo: #ffb08a;
+    --hero-sombra: 0 30px 60px -30px color-mix(in srgb, var(--cor-acento) 50%, transparent), 0 18px 36px -18px rgba(0, 0, 0, 0.5);
+    --hero-brilho: color-mix(in srgb, var(--cor-acento) 45%, transparent);
+    --luz-cor: color-mix(in srgb, var(--cor-acento) 13%, transparent);
+    --luz-borda: color-mix(in srgb, var(--cor-acento) 70%, transparent);
+    --orbe-opacidade: 0.38;
+    --cor-fundo-cartao: #16171a;
+    --cor-fundo-input: #1c1d21;
+    --cor-fundo-input-foco: #212226;
+    --cor-fundo-secao: #1c1d21;
 
-    --cor-borda: #34383c;
-    --cor-borda-cartao: #2e3236;
+    --cor-texto-principal: #f2f2f3;
+    --cor-texto-secundario: #9a9ba1;
+    --cor-texto-label: #c8c9cd;
 
-    --cor-acento: #2bbf8e;
-    --cor-acento-hover: #3fd9a4;
-    --cor-acento-fundo-suave: rgba(43, 191, 142, 0.12);
+    --cor-borda: #2a2b30;
+    --cor-borda-cartao: #222327;
 
-    --cor-erro-fundo: rgba(226, 75, 74, 0.12);
-    --cor-erro-texto: #f29a99;
+    --cor-acento: #1f9e70;
+    --cor-acento-hover: #27b382;
+    --cor-acento-fundo-suave: rgba(52, 197, 143, 0.13);
 
-    --cor-sucesso-texto: #3fd9a4;
-    --cor-alerta-texto: #e8a978;
+    --cor-erro-fundo: rgba(220, 68, 70, 0.14);
+    --cor-erro-texto: #f39b9b;
 
-    --cor-sombra-cartao: 0 1px 3px rgba(0, 0, 0, 0.4);
+    --cor-sucesso-texto: #4fd8a3;
+    --cor-alerta-texto: #f0a874;
+
+    --cor-sombra-cartao: none;
+    --sombra-flutuante: 0 16px 40px -8px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.04);
+    --cor-overlay: rgba(0, 0, 0, 0.6);
   }
 }

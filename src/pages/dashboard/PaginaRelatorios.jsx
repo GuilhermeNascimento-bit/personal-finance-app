@@ -7,12 +7,13 @@ import { jsPDF } from "jspdf";
 import { calcularRelatorio } from "../../firebase/transacoes";
 import { useMoeda } from "../../context/MoedaContext";
 import "./relatorios.css";
+import { useIdioma } from "../../i18n/IdiomaContext";
 
 const PERIODOS = [
-  { label: "Este mês", meses: 1 },
-  { label: "3 meses", meses: 3 },
-  { label: "6 meses", meses: 6 },
-  { label: "Este ano", meses: 12 },
+  { chave: "rel.periodo1", meses: 1 },
+  { chave: "rel.periodo3", meses: 3 },
+  { chave: "rel.periodo6", meses: 6 },
+  { chave: "rel.periodo12", meses: 12 },
 ];
 
 function filtrarPorPeriodo(transacoes, meses) {
@@ -23,13 +24,13 @@ function filtrarPorPeriodo(transacoes, meses) {
   return transacoes.filter((t) => new Date(t.data) >= inicio);
 }
 
-function gerarEvolucao(transacoes, meses) {
+function gerarEvolucao(transacoes, meses, locale) {
   const agora = new Date();
   return Array.from({ length: meses }, (_, i) => {
     const d = new Date(agora.getFullYear(), agora.getMonth() - (meses - 1 - i), 1);
     const ano = d.getFullYear();
     const mes = d.getMonth();
-    const label = d.toLocaleDateString("pt-BR", {
+    const label = d.toLocaleDateString(locale, {
       month: "short",
       ...(meses > 6 ? { year: "2-digit" } : {}),
     });
@@ -54,7 +55,7 @@ const CORES_PDF = [
   [186, 117, 23], [224, 92, 138], [91, 163, 201], [136, 135, 128],
 ];
 
-async function gerarPDF({ periodoLabel, relatorio, evolucao, porCategoria, fmt }) {
+async function gerarPDF({ periodoLabel, relatorio, evolucao, porCategoria, fmt, t, locale }) {
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const W = pdf.internal.pageSize.getWidth();
   const H = pdf.internal.pageSize.getHeight();
@@ -68,11 +69,11 @@ async function gerarPDF({ periodoLabel, relatorio, evolucao, porCategoria, fmt }
   pdf.setTextColor(255, 255, 255);
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(18);
-  pdf.text("Relatório Financeiro", margin, 15);
+  pdf.text(t("rel.pdfTitulo"), margin, 15);
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(10);
   pdf.text(
-    `Período: ${periodoLabel}   ·   Gerado em ${new Date().toLocaleDateString("pt-BR")}`,
+    t("rel.pdfSub", { periodo: periodoLabel, data: new Date().toLocaleDateString(locale) }),
     margin, 26
   );
   y = 46;
@@ -81,14 +82,14 @@ async function gerarPDF({ periodoLabel, relatorio, evolucao, porCategoria, fmt }
   const cardW = (cw - 8) / 2;
   const cardH = 23;
   const summaryItems = [
-    { label: "Receitas", valor: relatorio.totalReceitas, cor: [15, 110, 86] },
-    { label: "Despesas pagas", valor: relatorio.totalDespesasPagas, cor: [180, 60, 20] },
+    { label: t("comum.receitas"), valor: relatorio.totalReceitas, cor: [15, 110, 86] },
+    { label: t("rel.despesasPagas"), valor: relatorio.totalDespesasPagas, cor: [180, 60, 20] },
     {
-      label: "Saldo no período",
+      label: t("rel.saldoPeriodo"),
       valor: relatorio.saldoReal,
       cor: relatorio.saldoReal >= 0 ? [15, 110, 86] : [180, 60, 20],
     },
-    { label: "Pendente a pagar", valor: relatorio.totalPendenteFuturo, cor: [90, 90, 90] },
+    { label: t("rel.pendente"), valor: relatorio.totalPendenteFuturo, cor: [90, 90, 90] },
   ];
 
   summaryItems.forEach((item, i) => {
@@ -114,11 +115,11 @@ async function gerarPDF({ periodoLabel, relatorio, evolucao, porCategoria, fmt }
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(12);
   pdf.setTextColor(30, 40, 30);
-  pdf.text("Evolução mensal", margin, y);
+  pdf.text(t("rel.evolucao"), margin, y);
   y += 8;
 
   const colW = [30, (cw - 30) / 3, (cw - 30) / 3, (cw - 30) / 3];
-  const headers = ["Mês", "Receitas", "Despesas", "Saldo"];
+  const headers = [t("rel.mes"), t("comum.receitas"), t("comum.despesas"), t("rel.saldo")];
 
   pdf.setFillColor(29, 158, 117);
   pdf.rect(margin, y, cw, 8, "F");
@@ -158,7 +159,7 @@ async function gerarPDF({ periodoLabel, relatorio, evolucao, porCategoria, fmt }
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(12);
     pdf.setTextColor(30, 40, 30);
-    pdf.text("Gastos por categoria", margin, y);
+    pdf.text(t("rel.porCategoria"), margin, y);
     y += 8;
 
     const totalDespesas = porCategoria.reduce((s, c) => s + c.valor, 0) || 1;
@@ -205,17 +206,18 @@ async function gerarPDF({ periodoLabel, relatorio, evolucao, porCategoria, fmt }
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(8);
     pdf.setTextColor(160, 165, 158);
-    pdf.text(`Finanças  ·  Página ${p} de ${totalPages}`, margin, H - 8);
+    pdf.text(t("rel.pdfRodape", { p, total: totalPages }), margin, H - 8);
   }
 
-  const dataHoje = new Date().toLocaleDateString("pt-BR").replace(/\//g, "-");
-  pdf.save(`relatorio-${periodoLabel.toLowerCase().replace(/\s/g, "-")}-${dataHoje}.pdf`);
+  const dataHoje = new Date().toISOString().slice(0, 10);
+  pdf.save(`${t("rel.pdfArquivo")}-${periodoLabel.toLowerCase().replace(/\s/g, "-")}-${dataHoje}.pdf`);
 }
 
 // ── Componente ────────────────────────────────────────────────────────────────
 
 export default function PaginaRelatorios({ transacoes }) {
   const { formatarValor, moeda } = useMoeda();
+  const { t, locale } = useIdioma();
   const fmt = formatarValor;
   const [periodoIdx, setPeriodoIdx] = useState(1);
   const [exportando, setExportando] = useState(false);
@@ -227,8 +229,8 @@ export default function PaginaRelatorios({ transacoes }) {
   );
   const relatorio = useMemo(() => calcularRelatorio(filtradas), [filtradas]);
   const evolucao = useMemo(
-    () => gerarEvolucao(transacoes, periodo.meses),
-    [transacoes, periodo.meses]
+    () => gerarEvolucao(transacoes, periodo.meses, locale),
+    [transacoes, periodo.meses, locale]
   );
   const porCategoria = useMemo(() => {
     const map = {};
@@ -246,11 +248,13 @@ export default function PaginaRelatorios({ transacoes }) {
     setExportando(true);
     try {
       await gerarPDF({
-        periodoLabel: periodo.label,
+        periodoLabel: t(periodo.chave),
         relatorio,
         evolucao,
         porCategoria,
         fmt,
+        t,
+        locale,
       });
     } finally {
       setExportando(false);
@@ -258,14 +262,14 @@ export default function PaginaRelatorios({ transacoes }) {
   }
 
   const cards = [
-    { label: "Receitas", valor: relatorio.totalReceitas, cls: "positivo" },
-    { label: "Despesas pagas", valor: relatorio.totalDespesasPagas, cls: "negativo" },
+    { label: t("comum.receitas"), valor: relatorio.totalReceitas, cls: "positivo" },
+    { label: t("rel.despesasPagas"), valor: relatorio.totalDespesasPagas, cls: "negativo" },
     {
-      label: "Saldo no período",
+      label: t("rel.saldoPeriodo"),
       valor: relatorio.saldoReal,
       cls: relatorio.saldoReal >= 0 ? "positivo" : "negativo",
     },
-    { label: "Pendente a pagar", valor: relatorio.totalPendenteFuturo, cls: "neutro" },
+    { label: t("rel.pendente"), valor: relatorio.totalPendenteFuturo, cls: "neutro" },
   ];
 
   return (
@@ -278,7 +282,7 @@ export default function PaginaRelatorios({ transacoes }) {
               className={`btn-periodo ${periodoIdx === i ? "ativo" : ""}`}
               onClick={() => setPeriodoIdx(i)}
             >
-              {p.label}
+              {t(p.chave)}
             </button>
           ))}
         </div>
@@ -287,21 +291,21 @@ export default function PaginaRelatorios({ transacoes }) {
           onClick={handleExportar}
           disabled={exportando}
         >
-          {exportando ? "Gerando…" : "↓ Exportar PDF"}
+          {exportando ? t("rel.gerando") : `↓ ${t("rel.exportar")}`}
         </button>
       </div>
 
       <div className="grade-resumo-relatorio">
         {cards.map((c, i) => (
-          <div key={i} className="card-relatorio" style={{ animationDelay: `${i * 0.06}s` }}>
+          <div key={i} className="card-relatorio luz" style={{ animationDelay: `${i * 0.06}s` }}>
             <p className="card-rel-label">{c.label}</p>
             <p className={`card-rel-valor ${c.cls}`}>{fmt(c.valor)}</p>
           </div>
         ))}
       </div>
 
-      <div className="cartao-relatorio">
-        <h3 className="titulo-relatorio">Evolução mensal</h3>
+      <div className="cartao-relatorio luz">
+        <h3 className="titulo-relatorio">{t("rel.evolucao")}</h3>
         <ResponsiveContainer width="100%" height={240}>
           <LineChart data={evolucao} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--cor-borda)" vertical={false} />
@@ -328,16 +332,16 @@ export default function PaginaRelatorios({ transacoes }) {
               }}
               labelStyle={{ color: "var(--cor-texto-principal)", fontWeight: 600 }}
             />
-            <Line type="monotone" dataKey="receitas" name="Receitas" stroke="#1d9e75" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
-            <Line type="monotone" dataKey="despesas" name="Despesas" stroke="#d85a30" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
-            <Line type="monotone" dataKey="saldo" name="Saldo" stroke="#7f77dd" strokeWidth={2} dot={false} activeDot={{ r: 4 }} strokeDasharray="4 2" />
+            <Line type="monotone" dataKey="receitas" name={t("comum.receitas")} stroke="var(--grafico-receita)" strokeWidth={2.5} dot={false} activeDot={{ r: 5 }} animationDuration={1200} />
+            <Line type="monotone" dataKey="despesas" name={t("comum.despesas")} stroke="var(--grafico-despesa)" strokeWidth={2.5} dot={false} activeDot={{ r: 5 }} animationDuration={1200} animationBegin={150} />
+            <Line type="monotone" dataKey="saldo" name={t("rel.saldo")} stroke="var(--grafico-3)" strokeWidth={2} dot={false} activeDot={{ r: 5 }} strokeDasharray="4 3" animationDuration={1200} animationBegin={300} />
           </LineChart>
         </ResponsiveContainer>
         <div className="legenda-grafico">
           {[
-            { cor: "#1d9e75", nome: "Receitas" },
-            { cor: "#d85a30", nome: "Despesas" },
-            { cor: "#7f77dd", nome: "Saldo" },
+            { cor: "var(--grafico-receita)", nome: t("comum.receitas") },
+            { cor: "var(--grafico-despesa)", nome: t("comum.despesas") },
+            { cor: "var(--grafico-3)", nome: t("rel.saldo") },
           ].map((l) => (
             <div key={l.nome} className="legenda-item">
               <div className="legenda-cor" style={{ background: l.cor }} />
@@ -347,10 +351,10 @@ export default function PaginaRelatorios({ transacoes }) {
         </div>
       </div>
 
-      <div className="cartao-relatorio">
-        <h3 className="titulo-relatorio">Gastos por categoria</h3>
+      <div className="cartao-relatorio luz">
+        <h3 className="titulo-relatorio">{t("rel.porCategoria")}</h3>
         {porCategoria.length === 0 ? (
-          <p className="relatorio-vazio">Nenhuma despesa paga no período.</p>
+          <p className="relatorio-vazio">{t("rel.vazio")}</p>
         ) : (
           <div className="lista-categorias">
             {porCategoria.map((item, i) => (
@@ -362,12 +366,12 @@ export default function PaginaRelatorios({ transacoes }) {
                 <div className="barra-cat-fundo">
                   <div
                     className="barra-cat-progresso"
-                    style={{ width: `${(item.valor / maxCat) * 100}%` }}
+                    style={{ width: `${(item.valor / maxCat) * 100}%`, animationDelay: `${i * 70}ms` }}
                   />
                 </div>
                 <span className="cat-pct">
                   {relatorio.totalDespesasPagas > 0
-                    ? `${((item.valor / relatorio.totalDespesasPagas) * 100).toFixed(0)}% das despesas`
+                    ? t("rel.pctDespesas", { pct: ((item.valor / relatorio.totalDespesasPagas) * 100).toFixed(0) })
                     : "—"}
                 </span>
               </div>

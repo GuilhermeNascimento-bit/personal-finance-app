@@ -7,7 +7,9 @@ import {
 import { db } from "../../firebase/firebaseConfig";
 import { adicionarTransacao } from "../../firebase/transacoes";
 import { useMoeda } from "../../context/MoedaContext";
+import Confirmacao from "../../components/Confirmacao";
 import "./recomendacoes.css";
+import { useIdioma } from "../../i18n/IdiomaContext";
 
 function mesesAteData(dataAlvo) {
   const hoje = new Date();
@@ -21,7 +23,8 @@ function mesesAteData(dataAlvo) {
 const EMOJIS = ["🎯", "✈️", "🏠", "🚗", "💻", "📱", "🎓", "💍", "🏖️", "🎸", "🐾", "💰"];
 
 function ModalNovaMeta({ uid, aoFechar }) {
-  const { formatarValor: fmt } = useMoeda();
+  const { formatarValor: fmt, moeda } = useMoeda();
+  const { t } = useIdioma();
   const [nome, setNome] = useState("");
   const [valor, setValor] = useState("");
   const [dataAlvo, setDataAlvo] = useState("");
@@ -33,9 +36,9 @@ function ModalNovaMeta({ uid, aoFechar }) {
   const porMes = meses && valor ? (Number(valor) / meses) : null;
 
   async function salvar() {
-    if (!nome.trim()) return setErro("Informe o nome da meta.");
-    if (!valor || Number(valor) <= 0) return setErro("Informe o valor da meta.");
-    if (!dataAlvo) return setErro("Informe a data alvo.");
+    if (!nome.trim()) return setErro(t("metas.erroNome"));
+    if (!valor || Number(valor) <= 0) return setErro(t("metas.erroValor"));
+    if (!dataAlvo) return setErro(t("metas.erroData"));
 
     setSalvando(true);
     try {
@@ -50,7 +53,7 @@ function ModalNovaMeta({ uid, aoFechar }) {
       aoFechar();
     } catch (err) {
       console.error("Erro ao salvar meta:", err);
-      setErro(`Erro ao salvar: ${err.message || "Tente novamente."}`);
+      setErro(t("modal.erroSalvar"));
       setSalvando(false);
     }
   }
@@ -59,13 +62,13 @@ function ModalNovaMeta({ uid, aoFechar }) {
     <div className="overlay-modal" onClick={(e) => e.target === e.currentTarget && aoFechar()}>
       <div className="modal modal-meta">
         <div className="modal-cabecalho">
-          <h2>Nova meta</h2>
-          <button className="botao-fechar-modal" onClick={aoFechar}>✕</button>
+          <h2>{t("metas.nova")}</h2>
+          <button className="botao-fechar-modal" onClick={aoFechar} aria-label={t("comum.fechar")}>✕</button>
         </div>
 
         <div className="modal-corpo">
           <div className="campo-modal">
-            <label>Ícone</label>
+            <label>{t("metas.icone")}</label>
             <div className="grade-emojis">
               {EMOJIS.map((e) => (
                 <button key={e} type="button"
@@ -78,16 +81,16 @@ function ModalNovaMeta({ uid, aoFechar }) {
           </div>
 
           <div className="campo-modal">
-            <label htmlFor="meta-nome">Nome da meta</label>
+            <label htmlFor="meta-nome">{t("metas.nome")}</label>
             <input id="meta-nome" type="text" value={nome}
               onChange={(e) => setNome(e.target.value)}
-              placeholder="Ex: Viagem para Europa, MacBook Pro..." />
+              placeholder={t("metas.placeholderNome")} />
           </div>
 
           <div className="campo-modal">
-            <label htmlFor="meta-valor">Valor necessário</label>
+            <label htmlFor="meta-valor">{t("metas.valor")}</label>
             <div className="input-com-prefixo">
-              <span>R$</span>
+              <span>{moeda.simbolo}</span>
               <input id="meta-valor" type="number" inputMode="decimal"
                 value={valor} onChange={(e) => setValor(e.target.value)}
                 placeholder="0,00" />
@@ -95,7 +98,7 @@ function ModalNovaMeta({ uid, aoFechar }) {
           </div>
 
           <div className="campo-modal">
-            <label htmlFor="meta-data">Data alvo</label>
+            <label htmlFor="meta-data">{t("metas.dataAlvo")}</label>
             <input id="meta-data" type="date" value={dataAlvo}
               onChange={(e) => setDataAlvo(e.target.value)}
               min={new Date().toISOString().split("T")[0]} />
@@ -103,8 +106,8 @@ function ModalNovaMeta({ uid, aoFechar }) {
 
           {porMes && meses && (
             <div className="preview-meta">
-              <span>📅 {meses} {meses === 1 ? "mês" : "meses"} até a meta</span>
-              <strong>Guardar {fmt(porMes)}/mês</strong>
+              <span>📅 {t("metas.mesesAte", { n: meses })}</span>
+              <strong>{t("metas.guardarMes", { valor: fmt(porMes) })}</strong>
             </div>
           )}
 
@@ -112,9 +115,9 @@ function ModalNovaMeta({ uid, aoFechar }) {
         </div>
 
         <div className="modal-rodape">
-          <button className="botao-cancelar" onClick={aoFechar}>Cancelar</button>
+          <button className="botao-cancelar" onClick={aoFechar}>{t("comum.cancelar")}</button>
           <button className="botao-salvar" onClick={salvar} disabled={salvando}>
-            {salvando ? "Salvando..." : "Criar meta"}
+            {salvando ? t("comum.salvando") : t("metas.criar")}
           </button>
         </div>
       </div>
@@ -124,10 +127,15 @@ function ModalNovaMeta({ uid, aoFechar }) {
 
 export default function PaginaMetas() {
   const { usuario } = useAuth();
-  const { formatarValor: fmt } = useMoeda();
+  const { formatarValor: fmt, moeda } = useMoeda();
+  const { t, formatarData } = useIdioma();
   const uid = usuario?.uid;
   const [metas, setMetas] = useState([]);
   const [modalAberto, setModalAberto] = useState(false);
+  const [guardandoEm, setGuardandoEm] = useState(null);   // meta recebendo economia
+  const [valorGuardar, setValorGuardar] = useState("");
+  const [salvandoEconomia, setSalvandoEconomia] = useState(false);
+  const [paraRemover, setParaRemover] = useState(null);
 
   useEffect(() => {
     if (!uid) return;
@@ -140,27 +148,37 @@ export default function PaginaMetas() {
     });
   }, [uid]);
 
-  async function removerMeta(id) {
-    if (!window.confirm("Remover esta meta?")) return;
-    await deleteDoc(doc(db, "usuarios", uid, "metas", id));
+  async function removerMeta() {
+    await deleteDoc(doc(db, "usuarios", uid, "metas", paraRemover.id));
+    setParaRemover(null);
   }
 
-  async function adicionarEconomia(meta) {
-    const valor = parseFloat(
-      window.prompt(`Quanto você guardou para "${meta.nome}"? (R$)`) || "0"
-    );
+  function abrirEconomia(meta) {
+    setValorGuardar("");
+    setGuardandoEm(meta);
+  }
+
+  async function adicionarEconomia() {
+    const meta = guardandoEm;
+    const valor = parseFloat(String(valorGuardar).replace(",", "."));
     if (!valor || valor <= 0) return;
-    await Promise.all([
+    setSalvandoEconomia(true);
+    try {
+      await Promise.all([
       updateDoc(doc(db, "usuarios", uid, "metas", meta.id), {
         acumulado: (meta.acumulado || 0) + valor,
       }),
       adicionarTransacao(uid, "despesa", {
-        categoria: `Meta: ${meta.nome}`,
+        categoria: `${t("metas.prefixoCategoria")}: ${meta.nome}`,
         data: new Date(),
         valor,
         status: "pago",
       }),
     ]);
+      setGuardandoEm(null);
+    } finally {
+      setSalvandoEconomia(false);
+    }
   }
 
   return (
@@ -168,21 +186,21 @@ export default function PaginaMetas() {
       <div className="secao-metas">
         <div className="metas-cabecalho">
           <div>
-            <h3 className="titulo-secao">Planejamento de metas</h3>
+            <h3 className="titulo-secao">{t("metas.planejamento")}</h3>
             <p className="subtitulo-secao">
-              Defina objetivos e veja quanto precisa guardar por mês para chegar lá.
+              {t("metas.planejamentoSub")}
             </p>
           </div>
           <button className="botao-nova-meta" onClick={() => setModalAberto(true)}>
-            + Nova meta
+            + {t("metas.nova")}
           </button>
         </div>
 
         {metas.length === 0 ? (
           <div className="metas-vazio">
             <p>🎯</p>
-            <p>Nenhuma meta cadastrada ainda.</p>
-            <p>Adicione uma viagem, compra ou reserva para começar a planejar.</p>
+            <p>{t("metas.vazio")}</p>
+            <p>{t("metas.vazioSub")}</p>
           </div>
         ) : (
           <div className="lista-metas">
@@ -193,7 +211,7 @@ export default function PaginaMetas() {
               const concluida = progresso >= 100;
 
               return (
-                <div key={meta.id} className={`card-meta ${concluida ? "meta-concluida" : ""}`}
+                <div key={meta.id} className={`card-meta luz ${concluida ? "meta-concluida" : ""}`}
                   style={{ animationDelay: `${i * 0.08}s` }}>
                   <div className="meta-topo">
                     <div className="meta-info">
@@ -201,20 +219,18 @@ export default function PaginaMetas() {
                       <div>
                         <p className="meta-nome">{meta.nome}</p>
                         <p className="meta-prazo">
-                          {new Date(meta.dataAlvo).toLocaleDateString("pt-BR", {
-                            month: "long", year: "numeric"
-                          })} · {meses} {meses === 1 ? "mês" : "meses"}
+                          {formatarData(meta.dataAlvo, { month: "long", year: "numeric" })} · {t("metas.meses", { n: meses })}
                         </p>
                       </div>
                     </div>
                     <div className="meta-acoes">
                       {!concluida && (
-                        <button className="botao-acao-meta" onClick={() => adicionarEconomia(meta)} title="Registrar economia">
+                        <button className="botao-acao-meta" onClick={() => abrirEconomia(meta)} title={t("metas.registrar")}>
                           +
                         </button>
                       )}
                       <button className="botao-acao-meta botao-remover-meta"
-                        onClick={() => removerMeta(meta.id)} title="Remover">
+                        onClick={() => setParaRemover(meta)} title={t("comum.remover")}>
                         ✕
                       </button>
                     </div>
@@ -222,7 +238,7 @@ export default function PaginaMetas() {
 
                   <div className="meta-valores">
                     <span className="meta-acumulado">{fmt(meta.acumulado || 0)}</span>
-                    <span className="meta-separador">de</span>
+                    <span className="meta-separador">{t("metas.de")}</span>
                     <span className="meta-total">{fmt(meta.valor)}</span>
                   </div>
 
@@ -232,11 +248,11 @@ export default function PaginaMetas() {
 
                   <div className="meta-rodape">
                     {concluida ? (
-                      <span className="meta-badge-concluida">✓ Meta atingida!</span>
+                      <span className="meta-badge-concluida">✓ {t("metas.atingida")}</span>
                     ) : (
                       <>
                         <span className="meta-por-mes">
-                          Guardar <strong>{fmt(Math.max(0, guardadoPorMes))}/mês</strong>
+                          {t("metas.guardar")} <strong>{t("metas.porMes", { valor: fmt(Math.max(0, guardadoPorMes)) })}</strong>
                         </span>
                         <span className="meta-percentual">{progresso.toFixed(0)}%</span>
                       </>
@@ -251,6 +267,66 @@ export default function PaginaMetas() {
 
       {modalAberto && (
         <ModalNovaMeta uid={uid} aoFechar={() => setModalAberto(false)} />
+      )}
+
+      {guardandoEm && (() => {
+        const restante = Math.max(0, guardandoEm.valor - (guardandoEm.acumulado || 0));
+        const sugestaoMes = restante / mesesAteData(guardandoEm.dataAlvo);
+        const atalhos = [
+          { rotulo: t("metas.atalhoMes"), valor: sugestaoMes },
+          { rotulo: t("metas.atalhoTudo"), valor: restante },
+        ].filter((a) => a.valor > 0);
+        return (
+          <Confirmacao
+            icone="cofre"
+            titulo={t("metas.quantoGuardou", { nome: guardandoEm.nome })}
+            texto={t("metas.faltam", { valor: fmt(restante) })}
+            rotuloConfirmar={t("metas.guardarBotao")}
+            desabilitado={!(parseFloat(String(valorGuardar).replace(",", ".")) > 0)}
+            ocupado={salvandoEconomia}
+            aoConfirmar={adicionarEconomia}
+            aoCancelar={() => setGuardandoEm(null)}
+          >
+            <div className="input-com-prefixo">
+              <span>{moeda.simbolo}</span>
+              <input
+                autoFocus
+                inputMode="decimal"
+                placeholder={moeda.codigo === "USD" ? "0.00" : "0,00"}
+                value={valorGuardar}
+                onChange={(e) => setValorGuardar(e.target.value.replace(/[^\d.,]/g, ""))}
+                aria-label={t("modal.valor")}
+              />
+            </div>
+            {atalhos.length > 0 && (
+              <div className="confirmacao-atalhos">
+                {atalhos.map((a) => (
+                  <button
+                    key={a.rotulo}
+                    type="button"
+                    className="confirmacao-atalho"
+                    onClick={() => setValorGuardar(a.valor.toFixed(2))}
+                  >
+                    {a.rotulo} · {fmt(a.valor)}
+                  </button>
+                ))}
+              </div>
+            )}
+          </Confirmacao>
+        );
+      })()}
+
+      {paraRemover && (
+        <Confirmacao
+          perigo
+          icone="lixeira"
+          titulo={t("metas.confirmarRemover")}
+          texto={t("seguranca.removerTexto")}
+          resumo={<><span>{paraRemover.emoji} {paraRemover.nome}</span><strong>{fmt(paraRemover.valor)}</strong></>}
+          rotuloConfirmar={t("comum.remover")}
+          aoConfirmar={removerMeta}
+          aoCancelar={() => setParaRemover(null)}
+        />
       )}
     </div>
   );

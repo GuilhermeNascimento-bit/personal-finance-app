@@ -1,12 +1,14 @@
 // EtapaDespesasFixas.jsx
 import { useState } from "react";
 import ListaCategoriaValor from "./ListaCategoriaValor";
+import { useIdioma } from "../../i18n/IdiomaContext";
 
-const SUGESTOES = ["Aluguel", "Internet", "Energia", "Água", "Telefone", "Streaming"];
 
 export default function EtapaDespesasFixas({ valoresIniciais, aoAvancar, aoVoltar }) {
+  const { t } = useIdioma();
+  const SUGESTOES = t("ob.fixasSugestoes");
   const [itens, setItens] = useState(
-    valoresIniciais.length > 0 ? valoresIniciais : [{ categoria: "Aluguel", valor: "" }]
+    valoresIniciais.length > 0 ? valoresIniciais : [{ categoria: SUGESTOES[0], valor: "" }]
   );
 
   function continuar() {
@@ -18,24 +20,22 @@ export default function EtapaDespesasFixas({ valoresIniciais, aoAvancar, aoVolta
 
   return (
     <div className="etapa">
-      <h2>Despesas fixas do mês</h2>
-      <p className="texto-etapa">
-        Contas que se repetem todo mês, como aluguel e assinaturas.
-      </p>
+      <h2>{t("ob.fixasTitulo")}</h2>
+      <p className="texto-etapa">{t("ob.fixasTexto")}</p>
 
       <ListaCategoriaValor
         itens={itens}
         aoMudar={setItens}
         categoriasSugeridas={SUGESTOES}
-        placeholderCategoria="Ex: Aluguel"
+        placeholderCategoria={t("ob.fixasPlaceholder")}
       />
 
       <div className="botoes-navegacao">
         <button type="button" className="botao-secundario" onClick={aoVoltar}>
-          Voltar
+          {t("comum.voltar")}
         </button>
         <button type="button" className="botao-primario" onClick={continuar}>
-          Continuar
+          {t("comum.continuar")}
         </button>
       </div>
     </div>

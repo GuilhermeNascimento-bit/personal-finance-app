@@ -33,14 +33,13 @@
 .card-dica {
   background: var(--cor-fundo-cartao);
   border: 1px solid var(--cor-borda-cartao);
-  border-radius: 14px;
+  border-radius: var(--raio-xl);
   padding: 18px;
   animation: fadeUp 0.35s ease both;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card-dica:hover {
-  transform: translateY(-3px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
@@ -89,7 +88,7 @@
   margin-top: 12px;
   padding: 8px 12px;
   background: var(--cor-fundo-secao);
-  border-radius: 8px;
+  border-radius: var(--raio-md);
   font-size: 13px;
   color: var(--cor-texto-secundario);
 }
@@ -103,7 +102,7 @@
 .secao-ia {
   background: var(--cor-fundo-cartao);
   border: 1px solid var(--cor-borda-cartao);
-  border-radius: 14px;
+  border-radius: var(--raio-xl);
   padding: 20px;
   animation: fadeUp 0.4s ease 0.1s both;
 }
@@ -118,7 +117,7 @@
 .botao-ia {
   height: 40px;
   padding: 0 18px;
-  border-radius: 10px;
+  border-radius: var(--raio-md);
   border: 1px solid var(--cor-acento);
   background: var(--cor-acento-fundo-suave);
   color: var(--cor-acento);
@@ -132,8 +131,7 @@
 
 .botao-ia:hover {
   background: var(--cor-acento);
-  color: #fff;
-  transform: translateY(-1px);
+  color: var(--cor-sobre-acento);
 }
 
 .ia-resultado {
@@ -171,7 +169,7 @@
   color: var(--cor-erro-texto);
   font-size: 13px;
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: var(--raio-md);
 }
 
 .ia-texto {
@@ -187,7 +185,7 @@
   line-height: 1.6;
   padding: 10px 14px;
   background: var(--cor-fundo-secao);
-  border-radius: 10px;
+  border-radius: var(--raio-md);
   margin: 0;
 }
 
@@ -228,10 +226,10 @@
 .botao-nova-meta {
   height: 38px;
   padding: 0 16px;
-  border-radius: 10px;
+  border-radius: var(--raio-md);
   border: none;
   background: var(--cor-acento);
-  color: #fff;
+  color: var(--cor-sobre-acento);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -242,7 +240,6 @@
 
 .botao-nova-meta:hover {
   background: var(--cor-acento-hover);
-  transform: translateY(-1px);
 }
 
 .metas-vazio {
@@ -250,7 +247,7 @@
   padding: 48px 32px;
   background: var(--cor-fundo-cartao);
   border: 1px solid var(--cor-borda-cartao);
-  border-radius: 14px;
+  border-radius: var(--raio-xl);
   color: var(--cor-texto-secundario);
   font-size: 14px;
   line-height: 1.8;
@@ -270,14 +267,13 @@
 .card-meta {
   background: var(--cor-fundo-cartao);
   border: 1px solid var(--cor-borda-cartao);
-  border-radius: 14px;
+  border-radius: var(--raio-xl);
   padding: 18px;
   animation: fadeUp 0.35s ease both;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card-meta:hover {
-  transform: translateY(-3px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
@@ -332,7 +328,7 @@
 .botao-acao-meta {
   width: 28px;
   height: 28px;
-  border-radius: 8px;
+  border-radius: var(--raio-md);
   border: 1px solid var(--cor-borda);
   background: var(--cor-fundo-secao);
   color: var(--cor-texto-secundario);
@@ -348,7 +344,7 @@
 .botao-acao-meta:hover {
   background: var(--cor-acento);
   border-color: var(--cor-acento);
-  color: #fff;
+  color: var(--cor-sobre-acento);
 }
 
 .botao-remover-meta:hover {
@@ -383,7 +379,7 @@
 
 .barra-meta-fundo {
   height: 6px;
-  border-radius: 3px;
+  border-radius: var(--raio-xs);
   background: var(--cor-borda);
   overflow: hidden;
   margin-bottom: 10px;
@@ -391,7 +387,7 @@
 
 .barra-meta-progresso {
   height: 100%;
-  border-radius: 3px;
+  border-radius: var(--raio-xs);
   background: var(--cor-acento);
   transition: width 0.5s ease;
 }
@@ -435,7 +431,7 @@
 .botao-emoji {
   width: 38px;
   height: 38px;
-  border-radius: 10px;
+  border-radius: var(--raio-md);
   border: 1px solid var(--cor-borda);
   background: var(--cor-fundo-input);
   font-size: 18px;
@@ -464,7 +460,7 @@
   padding: 12px 14px;
   background: var(--cor-acento-fundo-suave);
   border: 1px solid var(--cor-acento);
-  border-radius: 10px;
+  border-radius: var(--raio-md);
   font-size: 13px;
   color: var(--cor-texto-secundario);
   animation: fadeUp 0.2s ease;

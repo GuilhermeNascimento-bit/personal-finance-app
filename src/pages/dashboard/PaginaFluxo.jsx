@@ -8,13 +8,17 @@ import {
   removerRecorrente,
 } from "../../firebase/recorrentes";
 import { useMoeda } from "../../context/MoedaContext";
+import Confirmacao from "../../components/Confirmacao";
 import "./fluxo.css";
+import { useIdioma } from "../../i18n/IdiomaContext";
 
-const MESES = [
-  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
-];
-const DIAS_SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+// Nomes de mês/dia vêm do locale do idioma escolhido
+const nomeMes = (ano, mes, locale) => {
+  const s = new Date(ano, mes, 1).toLocaleDateString(locale, { month: "long" });
+  return s.charAt(0).toUpperCase() + s.slice(1);
+};
+const nomeDiaSemana = (ano, mes, dia, locale) =>
+  new Date(ano, mes, dia).toLocaleDateString(locale, { weekday: "short" }).replace(".", "");
 
 function diasNoMes(ano, mes) {
   return new Date(ano, mes + 1, 0).getDate();
@@ -24,6 +28,8 @@ function diasNoMes(ano, mes) {
 
 function ModalRecorrente({ uid, recorrente, aoFechar }) {
   const editando = !!recorrente;
+  const { t: tl } = useIdioma();
+  const { moeda } = useMoeda();
   const [tipo, setTipo] = useState(recorrente?.tipo || "receita");
   const [nome, setNome] = useState(recorrente?.nome || "");
   const [valor, setValor] = useState(recorrente?.valor || "");
@@ -33,10 +39,10 @@ function ModalRecorrente({ uid, recorrente, aoFechar }) {
   const [erro, setErro] = useState("");
 
   async function handleSalvar() {
-    if (!nome.trim()) return setErro("Informe um nome.");
-    if (!valor || Number(valor) <= 0) return setErro("Informe um valor válido.");
+    if (!nome.trim()) return setErro(tl("fluxo.erroNome"));
+    if (!valor || Number(valor) <= 0) return setErro(tl("modal.erroValor"));
     const diaNum = Number(dia);
-    if (!diaNum || diaNum < 1 || diaNum > 31) return setErro("Dia inválido (1–31).");
+    if (!diaNum || diaNum < 1 || diaNum > 31) return setErro(tl("fluxo.erroDia"));
 
     setSalvando(true);
     setErro("");
@@ -55,7 +61,7 @@ function ModalRecorrente({ uid, recorrente, aoFechar }) {
       }
       aoFechar();
     } catch {
-      setErro("Não foi possível salvar. Tente novamente.");
+      setErro(tl("modal.erroSalvar"));
       setSalvando(false);
     }
   }
@@ -64,44 +70,44 @@ function ModalRecorrente({ uid, recorrente, aoFechar }) {
     <div className="overlay-modal" onClick={(e) => e.target === e.currentTarget && aoFechar()}>
       <div className="modal">
         <div className="modal-cabecalho">
-          <h2>{editando ? "Editar pagamento fixo" : "Novo pagamento fixo"}</h2>
+          <h2>{editando ? tl("fluxo.editarFixo") : tl("fluxo.novoFixo")}</h2>
           <button className="botao-fechar-modal" onClick={aoFechar}>✕</button>
         </div>
         <div className="modal-corpo">
 
           <div className="campo-modal">
-            <label>Tipo</label>
+            <label>{tl("modal.tipo")}</label>
             <div className="toggle-tipo">
-              <button type="button" className={`toggle-opcao ${tipo === "receita" ? "ativo" : ""}`} onClick={() => setTipo("receita")}>↑ Receita</button>
-              <button type="button" className={`toggle-opcao ${tipo === "despesa" ? "ativo" : ""}`} onClick={() => { setTipo("despesa"); setFormaPagamento("dinheiro"); }}>↓ Despesa</button>
+              <button type="button" className={`toggle-opcao ${tipo === "receita" ? "ativo" : ""}`} onClick={() => setTipo("receita")}>↑ {tl("comum.receita")}</button>
+              <button type="button" className={`toggle-opcao ${tipo === "despesa" ? "ativo" : ""}`} onClick={() => { setTipo("despesa"); setFormaPagamento("dinheiro"); }}>↓ {tl("comum.despesa")}</button>
             </div>
           </div>
 
           <div className="campo-modal">
-            <label>Nome</label>
-            <input type="text" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex: Salário, Aluguel, Netflix..." />
+            <label>{tl("fluxo.nome")}</label>
+            <input type="text" value={nome} onChange={(e) => setNome(e.target.value)} placeholder={tl("fluxo.placeholderNome")} />
           </div>
 
           <div className="campo-modal">
-            <label>Valor</label>
+            <label>{tl("modal.valor")}</label>
             <div className="input-com-prefixo">
-              <span>R$</span>
+              <span>{moeda.simbolo}</span>
               <input type="number" inputMode="decimal" min="0" step="0.01" value={valor} onChange={(e) => setValor(e.target.value)} placeholder="0,00" />
             </div>
           </div>
 
           <div className="campo-modal">
-            <label>Dia do mês</label>
-            <input type="number" min="1" max="31" value={dia} onChange={(e) => setDia(e.target.value)} placeholder="Ex: 5" />
+            <label>{tl("fluxo.diaMes")}</label>
+            <input type="number" min="1" max="31" value={dia} onChange={(e) => setDia(e.target.value)} placeholder="5" />
           </div>
 
           {tipo === "despesa" && (
             <div className="campo-modal">
-              <label>Forma de pagamento</label>
+              <label>{tl("modal.formaPagamento")}</label>
               <div className="toggle-tipo">
-                <button type="button" className={`toggle-opcao ${formaPagamento === "dinheiro" ? "ativo" : ""}`} onClick={() => setFormaPagamento("dinheiro")}>Dinheiro</button>
-                <button type="button" className={`toggle-opcao ${formaPagamento === "debito" ? "ativo" : ""}`} onClick={() => setFormaPagamento("debito")}>Débito</button>
-                <button type="button" className={`toggle-opcao ${formaPagamento === "credito" ? "ativo" : ""}`} onClick={() => setFormaPagamento("credito")}>Crédito</button>
+                <button type="button" className={`toggle-opcao ${formaPagamento === "dinheiro" ? "ativo" : ""}`} onClick={() => setFormaPagamento("dinheiro")}>{tl("comum.dinheiro")}</button>
+                <button type="button" className={`toggle-opcao ${formaPagamento === "debito" ? "ativo" : ""}`} onClick={() => setFormaPagamento("debito")}>{tl("comum.debito")}</button>
+                <button type="button" className={`toggle-opcao ${formaPagamento === "credito" ? "ativo" : ""}`} onClick={() => setFormaPagamento("credito")}>{tl("comum.credito")}</button>
               </div>
             </div>
           )}
@@ -109,9 +115,9 @@ function ModalRecorrente({ uid, recorrente, aoFechar }) {
           {erro && <p className="erro-modal">{erro}</p>}
         </div>
         <div className="modal-rodape">
-          <button type="button" className="botao-cancelar" onClick={aoFechar}>Cancelar</button>
+          <button type="button" className="botao-cancelar" onClick={aoFechar}>{tl("comum.cancelar")}</button>
           <button type="button" className="botao-salvar" onClick={handleSalvar} disabled={salvando}>
-            {salvando ? "Salvando..." : editando ? "Salvar" : "Adicionar"}
+            {salvando ? tl("comum.salvando") : editando ? tl("comum.salvar") : tl("modal.adicionar")}
           </button>
         </div>
       </div>
@@ -124,6 +130,8 @@ function ModalRecorrente({ uid, recorrente, aoFechar }) {
 export default function PaginaFluxo({ transacoes }) {
   const { usuario } = useAuth();
   const { formatarValor: fmtBRL } = useMoeda();
+  const { t: tl, locale } = useIdioma();
+  const forma = (f) => tl(`comum.${f}`);
   const hoje = new Date();
 
   const [ano, setAno] = useState(hoje.getFullYear());
@@ -133,6 +141,7 @@ export default function PaginaFluxo({ transacoes }) {
   const [editando, setEditando] = useState(null);
   const [confirmandoId, setConfirmandoId] = useState(null);
   const [desfazendoId, setDesfazendoId] = useState(null);
+  const [fixoRemover, setFixoRemover] = useState(null);
 
   useEffect(() => {
     if (!usuario) return;
@@ -299,31 +308,31 @@ export default function PaginaFluxo({ transacoes }) {
 
       {/* ── Navegação de mês ── */}
       <div className="fluxo-nav-mes">
-        <button className="fluxo-btn-mes" onClick={mesPrev}>‹</button>
-        <h2 className="fluxo-titulo-mes">{MESES[mes]} {ano}</h2>
+        <button className="fluxo-btn-mes" onClick={mesPrev} aria-label="‹">‹</button>
+        <h2 className="fluxo-titulo-mes" key={`${ano}-${mes}`}>{nomeMes(ano, mes, locale)} {ano}</h2>
         <button className="fluxo-btn-mes" onClick={mesProx}>›</button>
       </div>
 
       {/* ── Resumo ── */}
       <div className="fluxo-resumo">
         <div className="fluxo-resumo-item verde">
-          <span className="fluxo-resumo-label">Entradas confirmadas</span>
+          <span className="fluxo-resumo-label">{tl("fluxo.entradasConf")}</span>
           <span className="fluxo-resumo-valor">{fmtBRL(resumo.recConf)}</span>
         </div>
         <div className="fluxo-resumo-item verde-suave">
-          <span className="fluxo-resumo-label">A receber</span>
+          <span className="fluxo-resumo-label">{tl("fluxo.aReceber")}</span>
           <span className="fluxo-resumo-valor">{fmtBRL(resumo.recPend)}</span>
         </div>
         <div className="fluxo-resumo-item vermelho">
-          <span className="fluxo-resumo-label">Saídas confirmadas</span>
+          <span className="fluxo-resumo-label">{tl("fluxo.saidasConf")}</span>
           <span className="fluxo-resumo-valor">{fmtBRL(resumo.despConf)}</span>
         </div>
         <div className="fluxo-resumo-item vermelho-suave">
-          <span className="fluxo-resumo-label">A pagar</span>
+          <span className="fluxo-resumo-label">{tl("fluxo.aPagar")}</span>
           <span className="fluxo-resumo-valor">{fmtBRL(resumo.despPend)}</span>
         </div>
         <div className={`fluxo-resumo-item saldo ${resumo.saldoProj >= 0 ? "positivo" : "negativo"}`}>
-          <span className="fluxo-resumo-label">Saldo projetado</span>
+          <span className="fluxo-resumo-label">{tl("fluxo.saldoProj")}</span>
           <span className="fluxo-resumo-valor">{fmtBRL(resumo.saldoProj)}</span>
         </div>
       </div>
@@ -333,18 +342,18 @@ export default function PaginaFluxo({ transacoes }) {
         {/* ── Pagamentos fixos ── */}
         <div className="fluxo-secao">
           <div className="fluxo-secao-cab">
-            <h3 className="fluxo-secao-titulo">Pagamentos fixos</h3>
+            <h3 className="fluxo-secao-titulo">{tl("fluxo.fixos")}</h3>
             <button
               className="fluxo-btn-adicionar"
               onClick={() => { setEditando(null); setModalAberto(true); }}
             >
-              + Adicionar
+              + {tl("modal.adicionar")}
             </button>
           </div>
 
           {recorrentesAtivos.length === 0 ? (
             <p className="fluxo-vazio">
-              Nenhum pagamento fixo. Adicione lançamentos que se repetem todo mês (salário, aluguel, assinaturas…).
+              {tl("fluxo.semFixos")}
             </p>
           ) : (
             <div className="fluxo-rec-lista">
@@ -353,11 +362,11 @@ export default function PaginaFluxo({ transacoes }) {
                   <span className={`fluxo-rec-seta ${r.tipo}`}>{r.tipo === "receita" ? "↑" : "↓"}</span>
                   <div className="fluxo-rec-info">
                     <p className="fluxo-rec-nome">{r.nome}</p>
-                    <p className="fluxo-rec-det">dia {r.dia} · {fmtBRL(r.valor)}{r.formaPagamento && r.formaPagamento !== "dinheiro" ? ` · ${r.formaPagamento}` : ""}</p>
+                    <p className="fluxo-rec-det">{tl("fluxo.dia", { dia: r.dia })} · {fmtBRL(r.valor)}{r.formaPagamento && r.formaPagamento !== "dinheiro" ? ` · ${forma(r.formaPagamento)}` : ""}</p>
                   </div>
                   <div className="fluxo-rec-acoes">
-                    <button className="fluxo-rec-btn editar" onClick={() => { setEditando(r); setModalAberto(true); }} title="Editar">✎</button>
-                    <button className="fluxo-rec-btn excluir" onClick={() => removerRecorrente(usuario.uid, r.id)} title="Excluir">✕</button>
+                    <button className="fluxo-rec-btn editar" onClick={() => { setEditando(r); setModalAberto(true); }} title={tl("comum.editar")}>✎</button>
+                    <button className="fluxo-rec-btn excluir" onClick={() => setFixoRemover(r)} title={tl("comum.remover")}>✕</button>
                   </div>
                 </div>
               ))}
@@ -368,22 +377,22 @@ export default function PaginaFluxo({ transacoes }) {
         {/* ── Timeline ── */}
         <div className="fluxo-secao fluxo-timeline-col">
           <div className="fluxo-secao-cab">
-            <h3 className="fluxo-secao-titulo">Lançamentos do mês</h3>
-            <span className="fluxo-abertura">Abertura: <strong>{fmtBRL(saldoAbertura)}</strong></span>
+            <h3 className="fluxo-secao-titulo">{tl("fluxo.lancamentos")}</h3>
+            <span className="fluxo-abertura">{tl("fluxo.abertura")}: <strong>{fmtBRL(saldoAbertura)}</strong></span>
           </div>
 
           {timeline.length === 0 ? (
             <p className="fluxo-vazio">
-              Sem lançamentos em {MESES[mes]}. Adicione transações ou configure pagamentos fixos.
+              {tl("fluxo.semLancamentos", { mes: nomeMes(ano, mes, locale) })}
             </p>
           ) : (
             <div className="fluxo-timeline">
-              {timeline.map(({ dia, diaSemana, txns, recs, saldo }) => (
-                <div key={dia} className="fluxo-dia">
+              {timeline.map(({ dia, txns, recs, saldo }, i) => (
+                <div key={dia} className="fluxo-dia" style={{ animationDelay: `${Math.min(i, 10) * 40}ms` }}>
                   <div className="fluxo-dia-header">
                     <div className="fluxo-dia-id">
                       <span className="fluxo-dia-num">{dia}</span>
-                      <span className="fluxo-dia-sem">{DIAS_SEMANA[diaSemana]}</span>
+                      <span className="fluxo-dia-sem">{nomeDiaSemana(ano, mes, dia, locale)}</span>
                     </div>
                     <span className={`fluxo-dia-saldo ${saldo >= 0 ? "positivo" : "negativo"}`}>
                       {fmtBRL(saldo)}
@@ -400,10 +409,10 @@ export default function PaginaFluxo({ transacoes }) {
                           <span className="fluxo-badge parcela">{t.parcelaAtual}/{t.parcelasTotal}</span>
                         )}
                         {t.formaPagamento && t.formaPagamento !== "dinheiro" && (
-                          <span className="fluxo-badge">{t.formaPagamento}</span>
+                          <span className="fluxo-badge">{forma(t.formaPagamento)}</span>
                         )}
                         <span className={`fluxo-item-valor ${t.tipo}`}>{fmtBRL(t.valor)}</span>
-                        <span className={`fluxo-item-dot ${t.status}`} title={t.status === "pago" ? "Confirmado" : "Pendente"}>
+                        <span className={`fluxo-item-dot ${t.status}`} title={t.status === "pago" ? tl("fluxo.confirmado") : tl("comum.pendente")}>
                           {t.status === "pago" ? "●" : "○"}
                         </span>
                       </div>
@@ -414,9 +423,9 @@ export default function PaginaFluxo({ transacoes }) {
                       <div key={r.id} className={`fluxo-item ${r.tipo} ${r.confirmado ? "pago" : "pendente"}`}>
                         <span className={`fluxo-item-seta ${r.tipo}`}>{r.tipo === "receita" ? "↑" : "↓"}</span>
                         <span className="fluxo-item-cat">{r.nome}</span>
-                        <span className="fluxo-badge fixo">fixo</span>
+                        <span className="fluxo-badge fixo">{tl("fluxo.fixo")}</span>
                         {r.formaPagamento && r.formaPagamento !== "dinheiro" && (
-                          <span className="fluxo-badge">{r.formaPagamento}</span>
+                          <span className="fluxo-badge">{forma(r.formaPagamento)}</span>
                         )}
                         <span className={`fluxo-item-valor ${r.tipo}`}>{fmtBRL(r.valor)}</span>
                         {r.confirmado ? (
@@ -424,7 +433,7 @@ export default function PaginaFluxo({ transacoes }) {
                             className="fluxo-btn-desfazer"
                             onClick={() => desfazerConfirmacao(r)}
                             disabled={desfazendoId === r.id}
-                            title="Desfazer confirmação"
+                            title={tl("fluxo.desfazer")}
                           >
                             {desfazendoId === r.id ? "…" : "✓"}
                           </button>
@@ -433,9 +442,9 @@ export default function PaginaFluxo({ transacoes }) {
                             className="fluxo-btn-confirmar"
                             onClick={() => confirmarRecorrente(r)}
                             disabled={confirmandoId === r.id}
-                            title={r.tipo === "receita" ? "Confirmar recebimento" : "Confirmar pagamento"}
+                            title={r.tipo === "receita" ? tl("fluxo.confirmarReceb") : tl("fluxo.confirmarPag")}
                           >
-                            {confirmandoId === r.id ? "…" : r.tipo === "receita" ? "Receber" : "Pagar"}
+                            {confirmandoId === r.id ? "…" : r.tipo === "receita" ? tl("fluxo.receber") : tl("fluxo.pagar")}
                           </button>
                         )}
                       </div>
@@ -447,6 +456,19 @@ export default function PaginaFluxo({ transacoes }) {
           )}
         </div>
       </div>
+
+      {fixoRemover && (
+        <Confirmacao
+          perigo
+          icone="lixeira"
+          titulo={tl("fluxo.removerTitulo")}
+          texto={tl("seguranca.removerTexto")}
+          resumo={<><span>{fixoRemover.nome}</span><strong>{fmtBRL(fixoRemover.valor)}</strong></>}
+          rotuloConfirmar={tl("comum.remover")}
+          aoConfirmar={async () => { await removerRecorrente(usuario.uid, fixoRemover.id); setFixoRemover(null); }}
+          aoCancelar={() => setFixoRemover(null)}
+        />
+      )}
 
       {modalAberto && (
         <ModalRecorrente

@@ -1,23 +1,23 @@
 import { useState } from "react";
-import { useMoeda, MOEDAS } from "../../context/MoedaContext";
+import { useMoeda } from "../../context/MoedaContext";
+import { useIdioma } from "../../i18n/IdiomaContext";
 
+// nome: índice em ob.recSugestoes (traduzido)
 const SUGESTOES = [
-  { nome: "Salário",           tipo: "receita", dia: 5,  formaPagamento: "dinheiro" },
-  { nome: "Aluguel",           tipo: "despesa", dia: 10, formaPagamento: "dinheiro" },
-  { nome: "Cartão de crédito", tipo: "despesa", dia: 7,  formaPagamento: "credito"  },
-  { nome: "Internet",          tipo: "despesa", dia: 15, formaPagamento: "debito"   },
-  { nome: "Streaming",         tipo: "despesa", dia: 1,  formaPagamento: "credito"  },
-  { nome: "Academia",          tipo: "despesa", dia: 1,  formaPagamento: "dinheiro" },
+  { i: 0, tipo: "receita", dia: 5,  formaPagamento: "dinheiro" },
+  { i: 1, tipo: "despesa", dia: 10, formaPagamento: "dinheiro" },
+  { i: 2, tipo: "despesa", dia: 7,  formaPagamento: "credito"  },
+  { i: 3, tipo: "despesa", dia: 15, formaPagamento: "debito"   },
+  { i: 4, tipo: "despesa", dia: 1,  formaPagamento: "credito"  },
+  { i: 5, tipo: "despesa", dia: 1,  formaPagamento: "dinheiro" },
 ];
 
-const FORMAS = [
-  { id: "dinheiro", label: "Dinheiro" },
-  { id: "debito",   label: "Débito"   },
-  { id: "credito",  label: "Crédito"  },
-];
+const FORMAS = ["dinheiro", "debito", "credito"];
 
 export default function EtapaRecorrentes({ valoresIniciais, aoAvancar, aoVoltar }) {
   const { moeda, formatarValor } = useMoeda();
+  const { t } = useIdioma();
+  const nomesSugestoes = t("ob.recSugestoes");
 
   const [lista, setLista]               = useState(valoresIniciais || []);
   const [tipo, setTipo]                 = useState("despesa");
@@ -29,17 +29,17 @@ export default function EtapaRecorrentes({ valoresIniciais, aoAvancar, aoVoltar 
 
   function aplicarSugestao(s) {
     setTipo(s.tipo);
-    setNome(s.nome);
+    setNome(nomesSugestoes[s.i]);
     setDia(String(s.dia));
     setForma(s.formaPagamento);
     setErro("");
   }
 
   function adicionar() {
-    if (!nome.trim()) return setErro("Informe um nome.");
-    if (!valor || Number(valor) <= 0) return setErro("Informe um valor válido.");
+    if (!nome.trim()) return setErro(t("fluxo.erroNome"));
+    if (!valor || Number(valor) <= 0) return setErro(t("modal.erroValor"));
     const diaNum = Number(dia);
-    if (!diaNum || diaNum < 1 || diaNum > 31) return setErro("Dia inválido (1–31).");
+    if (!diaNum || diaNum < 1 || diaNum > 31) return setErro(t("fluxo.erroDia"));
 
     setLista((ant) => [
       ...ant,
@@ -63,16 +63,16 @@ export default function EtapaRecorrentes({ valoresIniciais, aoAvancar, aoVoltar 
 
   return (
     <div className="etapa">
-      <h2>Pagamentos fixos mensais</h2>
+      <h2>{t("ob.recTitulo")}</h2>
       <p className="texto-etapa">
-        Adicione tudo que se repete todo mês — salário, aluguel, fatura do cartão...
+        {t("ob.recTexto")}
       </p>
 
       {/* Sugestões rápidas */}
       <div className="chips-sugestoes">
         {SUGESTOES.map((s) => (
-          <button key={s.nome} className="chip-sugestao" type="button" onClick={() => aplicarSugestao(s)}>
-            {s.nome}
+          <button key={s.i} className="chip-sugestao" type="button" onClick={() => aplicarSugestao(s)}>
+            {nomesSugestoes[s.i]}
           </button>
         ))}
       </div>
@@ -81,13 +81,13 @@ export default function EtapaRecorrentes({ valoresIniciais, aoAvancar, aoVoltar 
       <div className="form-recorrente-ob">
 
         <div className="toggle-tipo">
-          <button type="button" className={`toggle-opcao ${tipo === "receita" ? "ativo" : ""}`} onClick={() => setTipo("receita")}>↑ Receita</button>
-          <button type="button" className={`toggle-opcao ${tipo === "despesa" ? "ativo" : ""}`} onClick={() => setTipo("despesa")}>↓ Despesa</button>
+          <button type="button" className={`toggle-opcao ${tipo === "receita" ? "ativo" : ""}`} onClick={() => setTipo("receita")}>↑ {t("comum.receita")}</button>
+          <button type="button" className={`toggle-opcao ${tipo === "despesa" ? "ativo" : ""}`} onClick={() => setTipo("despesa")}>↓ {t("comum.despesa")}</button>
         </div>
 
         <input
           className="input-categoria"
-          placeholder="Nome (ex: Cartão de crédito)"
+          placeholder={t("ob.recPlaceholder")}
           value={nome}
           onChange={(e) => { setNome(e.target.value); setErro(""); }}
         />
@@ -98,14 +98,14 @@ export default function EtapaRecorrentes({ valoresIniciais, aoAvancar, aoVoltar 
             <input
               className="input-valor"
               type="number"
-              placeholder="Valor"
+              placeholder={t("modal.valor")}
               min="0"
               value={valor}
               onChange={(e) => setValor(e.target.value)}
             />
           </div>
           <div className="input-dia-wrapper">
-            <span className="prefixo-dia">Dia</span>
+            <span className="prefixo-dia">{t("ob.dia")}</span>
             <input
               className="input-valor"
               type="number"
@@ -122,12 +122,12 @@ export default function EtapaRecorrentes({ valoresIniciais, aoAvancar, aoVoltar 
           <div className="toggle-tipo">
             {FORMAS.map((f) => (
               <button
-                key={f.id}
+                key={f}
                 type="button"
-                className={`toggle-opcao ${formaPagamento === f.id ? "ativo" : ""}`}
-                onClick={() => setForma(f.id)}
+                className={`toggle-opcao ${formaPagamento === f ? "ativo" : ""}`}
+                onClick={() => setForma(f)}
               >
-                {f.label}
+                {t(`comum.${f}`)}
               </button>
             ))}
           </div>
@@ -140,7 +140,7 @@ export default function EtapaRecorrentes({ valoresIniciais, aoAvancar, aoVoltar 
           className="botao-adicionar-rec"
           onClick={adicionar}
         >
-          + Adicionar
+          + {t("modal.adicionar")}
         </button>
       </div>
 
@@ -153,9 +153,9 @@ export default function EtapaRecorrentes({ valoresIniciais, aoAvancar, aoVoltar 
               <div className="item-rec-texto">
                 <span className="item-rec-nome">{item.nome}</span>
                 <span className="item-rec-sub">
-                  Todo dia {item.dia}
+                  {t("ob.todoDia", { dia: item.dia })}
                   {item.tipo === "despesa" && item.formaPagamento !== "dinheiro"
-                    ? ` · ${item.formaPagamento === "credito" ? "Crédito" : "Débito"}`
+                    ? ` · ${t(`comum.${item.formaPagamento}`)}`
                     : ""}
                 </span>
               </div>
@@ -169,9 +169,9 @@ export default function EtapaRecorrentes({ valoresIniciais, aoAvancar, aoVoltar 
       )}
 
       <div className="botoes-navegacao">
-        <button className="botao-secundario" onClick={aoVoltar}>Voltar</button>
+        <button className="botao-secundario" onClick={aoVoltar}>{t("comum.voltar")}</button>
         <button className="botao-primario" onClick={() => aoAvancar(lista)}>
-          {lista.length === 0 ? "Pular" : "Continuar"}
+          {lista.length === 0 ? t("ob.pular") : t("comum.continuar")}
         </button>
       </div>
     </div>
