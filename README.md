@@ -5,6 +5,7 @@ Built with React + Firebase, with the core logic migrated from an earlier Python
 <img width="1920" height="700" alt="Transactions" src="https://github.com/user-attachments/assets/819d5cce-9402-4a44-8836-1c018e0671c0" />
 <img width="1920" height="700" alt="AI recommendations" src="https://github.com/user-attachments/assets/2f598b9c-c237-4074-84e4-10583b0e1729" />
 **Live demo:** https://app-financias-50396.web.app/
+**Demo account:** Demo account: demo@demo.com / demo1234
 Features
 Authentication: email/password sign-up and login with Firebase Auth
 Dashboard: balance cards and interactive charts (Recharts) showing where the money goes
