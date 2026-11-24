@@ -11,7 +11,8 @@ Authentication: email/password sign-up and login with Firebase Auth
 Dashboard: balance cards and interactive charts (Recharts) showing where the money goes
 Transactions: add, edit, and categorize income and expenses
 Onboarding wizard: guides new users through their first setup
-AI recommendations: spending diagnostics, a budget-cut simulator, and analysis powered by an LLM API (Anthropic Claude)
+**Financial diagnostics**: flags overspending, high rent, overdue bills and emergency-fund gaps, with suggested monthly cuts
+**AI analysis** *(planned)*: personalized recommendations via an LLM API, called from a secure backend function
 Savings goals: track progress toward financial goals (in progress)
 Dark mode: theme handled with CSS custom properties
 Tech stack
