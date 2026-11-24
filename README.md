@@ -1,9 +1,9 @@
 Personal Finance App
 A full-stack personal finance web app that helps users track income and expenses, visualize spending, set savings goals, and get AI-powered recommendations to improve their budget.
 Built with React + Firebase, with the core logic migrated from an earlier Python script I wrote for my own finances.
-<img width="1920" height="997" alt="Captura de tela 2026-11-24 103214" src="https://github.com/user-attachments/assets/535b4f6c-463b-4ab0-ba0c-d498d3e531df" />
-<img width="1914" height="994" alt="Captura de tela 2026-11-24 103242" src="https://github.com/user-attachments/assets/819d5cce-9402-4a44-8836-1c018e0671c0" />
-<img width="1919" height="992" alt="Captura de tela 2026-11-24 103327" src="https://github.com/user-attachments/assets/2f598b9c-c237-4074-84e4-10583b0e1729" />
+<img width="1920" height="700" alt="Dashboard" src="https://github.com/user-attachments/assets/535b4f6c-463b-4ab0-ba0c-d498d3e531df" />
+<img width="1920" height="700" alt="Transactions" src="https://github.com/user-attachments/assets/819d5cce-9402-4a44-8836-1c018e0671c0" />
+<img width="1920" height="700" alt="AI recommendations" src="https://github.com/user-attachments/assets/2f598b9c-c237-4074-84e4-10583b0e1729" />
 **Live demo:** https://app-financias-50396.web.app/
 Features
 Authentication: email/password sign-up and login with Firebase Auth
