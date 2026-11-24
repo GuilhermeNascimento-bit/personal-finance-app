@@ -30,8 +30,8 @@ Firestore security rules (`firestore.rules`) ensure users can only read and writ
 Getting started
 ```bash
 # 1. Clone the repository
-git clone https://github.com/GuilhermeNascimento-bit/app-financias.git
-cd app-financias
+git clone https://github.com/GuilhermeNascimento-bit/personal-finance-app.git
+cd personal-finance-app
 
 # 2. Install dependencies
 npm install
