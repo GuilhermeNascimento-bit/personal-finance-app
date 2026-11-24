@@ -1,8 +1,8 @@
 import { useState, useRef } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { updateProfile, sendPasswordResetEmail } from "firebase/auth";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { auth, storage } from "../../firebase/firebaseConfig";
+import { auth } from "../../firebase/firebaseConfig";
+import { prepararFoto, salvarFoto, useFotoPerfil } from "../../firebase/perfil";
 import { useMoeda, MOEDAS } from "../../context/MoedaContext";
 import { IDIOMAS, useIdioma } from "../../i18n/IdiomaContext";
 import { trocarTemaAnimado } from "../../utils/tema";
@@ -51,7 +51,7 @@ export default function PaginaConfiguracoes() {
 
   const [uploadandoFoto, setUploadandoFoto] = useState(false);
   const [msgFoto, setMsgFoto] = useState(null);
-  const [fotoUrl, setFotoUrl] = useState(usuario?.photoURL || null);
+  const fotoUrl = useFotoPerfil(usuario);
 
   const { moeda, setMoeda } = useMoeda();
   const [tema, setTema] = useState(() => localStorage.getItem("tema") || "auto");
@@ -75,7 +75,7 @@ export default function PaginaConfiguracoes() {
     }
   }
 
-  // Foto de perfil — upload para Firebase Storage
+  // Foto de perfil — reduzida no navegador e salva no Firestore (ver firebase/perfil.js)
   async function handleFotoChange(e) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -83,7 +83,7 @@ export default function PaginaConfiguracoes() {
       setMsgFoto({ tipo: "erro", texto: t("config.fotoTipo") });
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
+    if (file.size > 20 * 1024 * 1024) {
       setMsgFoto({ tipo: "erro", texto: t("config.fotoTamanho") });
       return;
     }
@@ -91,11 +91,8 @@ export default function PaginaConfiguracoes() {
     setUploadandoFoto(true);
     setMsgFoto(null);
     try {
-      const storageRef = ref(storage, `usuarios/${usuario.uid}/perfil`);
-      await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
-      await updateProfile(auth.currentUser, { photoURL: url });
-      setFotoUrl(url);
+      const dataUrl = await prepararFoto(file);
+      await salvarFoto(usuario.uid, dataUrl);
       setMsgFoto({ tipo: "sucesso", texto: t("config.fotoOk") });
     } catch (err) {
       console.error("Erro no upload:", err);

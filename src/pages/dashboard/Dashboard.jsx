@@ -26,6 +26,7 @@ import Logo from "../../components/Logo";
 import Digitando from "../../components/Digitando";
 import Confirmacao from "../../components/Confirmacao";
 import { useMoeda } from "../../context/MoedaContext";
+import { useFotoPerfil } from "../../firebase/perfil";
 import { temaEfetivo, trocarTemaAnimado } from "../../utils/tema";
 import "./dashboard.css";
 
@@ -105,10 +106,11 @@ function AbaSortable({ aba, rotulo, isAtivo, onClick, dica }) {
 }
 
 function Avatar({ usuario, size = 30 }) {
-  if (usuario?.photoURL) {
+  const foto = useFotoPerfil(usuario);
+  if (foto) {
     return (
       <img
-        src={usuario.photoURL}
+        src={foto}
         alt=""
         className="usuario-foto"
         style={{ width: size, height: size }}
