@@ -1,8 +1,19 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // Dono da conta, logado e com o e-mail CONFIRMADO.
+    // Sem confirmar o e-mail, o banco não lê nem grava nada — mesmo que
+    // alguém tente acessar direto pela API, sem passar pelo app.
+    function donoConfirmado(userId) {
+      return request.auth != null
+        && request.auth.uid == userId
+        && request.auth.token.email_verified == true;
+    }
+
+    // Tudo do usuário: transações, pagamentos fixos, metas e foto de perfil
     match /usuarios/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if donoConfirmado(userId);
     }
   }
 }

@@ -11,11 +11,11 @@ import {
   updateProfile,
   sendEmailVerification,
 } from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { auth, db } from "./firebaseConfig";
+import { auth } from "./firebaseConfig";
 
-// Cadastra um novo usuário com e-mail/senha e cria o documento dele
-// em "usuarios/{uid}" para guardar dados de perfil.
+// Cadastra um novo usuário com e-mail/senha e envia o link de confirmação.
+// Nada é gravado no banco aqui: as regras só liberam o Firestore depois que
+// o e-mail é confirmado (ver firestore.rules).
 export async function cadastrarUsuario(nome, email, senha, idioma = "pt") {
   const credencial = await createUserWithEmailAndPassword(auth, email, senha);
   const usuario = credencial.user;
@@ -23,24 +23,17 @@ export async function cadastrarUsuario(nome, email, senha, idioma = "pt") {
   await updateProfile(usuario, { displayName: nome });
   await enviarVerificacao(idioma);
 
-  await setDoc(doc(db, "usuarios", usuario.uid), {
-    nome,
-    email,
-    criadoEm: serverTimestamp(),
-  });
-
   return usuario;
 }
 
-// Contas criadas a partir desta data precisam confirmar o e-mail.
-// Contas antigas (criadas antes da verificação existir) continuam liberadas.
-export const INICIO_VERIFICACAO = Date.parse("2026-11-25T00:00:00-03:00");
-
+// Toda conta precisa confirmar o e-mail (as regras do Firestore exigem isso).
 export function precisaVerificarEmail(usuario) {
-  if (!usuario || usuario.emailVerified) return false;
-  const criado = Date.parse(usuario.metadata?.creationTime || "");
-  return Number.isFinite(criado) && criado >= INICIO_VERIFICACAO;
+  return !!usuario && !usuario.emailVerified;
 }
+
+// Marca que o link já foi enviado nesta sessão (evita reenvio automático)
+const chaveEnvio = (uid) => `verificacao-enviada-${uid}`;
+export const linkJaEnviado = (uid) => !!sessionStorage.getItem(chaveEnvio(uid));
 
 // Envia (ou reenvia) o link de confirmação. O e-mail sai no idioma do app e,
 // depois de confirmar, o botão "Continuar" do Firebase volta para o app.
@@ -48,7 +41,15 @@ export async function enviarVerificacao(idioma = "pt") {
   if (!auth.currentUser) return;
   auth.languageCode = idioma === "en" ? "en" : "pt-BR";
   const voltarPara = window.location.origin + window.location.pathname;
-  await sendEmailVerification(auth.currentUser, { url: voltarPara });
+  const chave = chaveEnvio(auth.currentUser.uid);
+  // marca antes de enviar: evita dois envios se a função for chamada em seguida
+  sessionStorage.setItem(chave, "1");
+  try {
+    await sendEmailVerification(auth.currentUser, { url: voltarPara });
+  } catch (e) {
+    sessionStorage.removeItem(chave);
+    throw e;
+  }
 }
 
 // Busca no servidor o estado atual da conta (ex.: e-mail recém-confirmado)

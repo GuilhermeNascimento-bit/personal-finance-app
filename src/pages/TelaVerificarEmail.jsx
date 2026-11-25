@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useIdioma } from "../i18n/IdiomaContext";
 import Logo from "../components/Logo";
 import Digitando from "../components/Digitando";
-import { recarregarUsuario } from "../firebase/auth";
+import { recarregarUsuario, linkJaEnviado } from "../firebase/auth";
 import "./PaginaLogin.css";
 import "./verificar-email.css";
 
@@ -29,6 +29,13 @@ export default function TelaVerificarEmail({ aoUsarOutroEmail }) {
   const [confirmado, setConfirmado] = useState(false);
 
   const caixa = linkCaixaDeEntrada(usuario?.email);
+
+  // Contas antigas (de antes da confirmação existir) nunca receberam o link:
+  // na primeira vez que a tela aparece, enviamos automaticamente.
+  useEffect(() => {
+    if (!usuario?.uid || linkJaEnviado(usuario.uid)) return;
+    reenviarVerificacao(idioma).catch(() => {});
+  }, [usuario?.uid, reenviarVerificacao, idioma]);
 
   // contagem regressiva do "reenviar"
   useEffect(() => {

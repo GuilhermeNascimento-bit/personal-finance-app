@@ -54,10 +54,19 @@
   100% { transform: scale(1.25); opacity: 0; }
 }
 
+.cartao-login.verificar .subtitulo-login strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 15px;
+  color: var(--cor-texto-principal);
+  overflow-wrap: anywhere;
+}
+
 .verificar-dica {
   font-size: 13px;
+  line-height: 1.5;
   color: var(--cor-texto-secundario);
-  margin: -6px 0 22px;
+  margin: 14px 0 22px;
 }
 
 .verificar-abrir {
