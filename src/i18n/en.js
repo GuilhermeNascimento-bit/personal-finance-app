@@ -1,7 +1,7 @@
 // English — same keys as pt.js. Missing keys fall back to Portuguese.
 const en = {
   comum: {
-    marca: "Finances",
+    marca: "Koin",
     carregando: "Loading...",
     carregandoDados: "Loading your data...",
     cancelar: "Cancel",
@@ -260,7 +260,7 @@ const en = {
     periodo12: "This year",
     pdfTitulo: "Financial Report",
     pdfSub: "Period: {periodo}   ·   Generated on {data}",
-    pdfRodape: "Finances  ·  Page {p} of {total}",
+    pdfRodape: "Koin  ·  Page {p} of {total}",
     pdfArquivo: "report",
     despesasPagas: "Paid expenses",
     saldoPeriodo: "Period balance",

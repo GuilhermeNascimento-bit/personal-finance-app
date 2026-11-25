@@ -1,4 +1,4 @@
-Personal Finance App
+Koin — Personal Finance App
 A full-stack personal finance web app that helps users track income and expenses, visualize spending, set savings goals, and get AI-powered recommendations to improve their budget.
 Built with React + Firebase, with the core logic migrated from an earlier Python script I wrote for my own finances.
 <img width="1920" height="700" alt="Dashboard" src="https://github.com/user-attachments/assets/535b4f6c-463b-4ab0-ba0c-d498d3e531df" />

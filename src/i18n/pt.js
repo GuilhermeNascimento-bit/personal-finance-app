@@ -1,7 +1,7 @@
 // Português (Brasil) — idioma base (padrão). Chaves faltando no inglês caem aqui.
 const pt = {
   comum: {
-    marca: "Finanças",
+    marca: "Koin",
     carregando: "Carregando...",
     carregandoDados: "Carregando seus dados...",
     cancelar: "Cancelar",
@@ -260,7 +260,7 @@ const pt = {
     periodo12: "Este ano",
     pdfTitulo: "Relatório Financeiro",
     pdfSub: "Período: {periodo}   ·   Gerado em {data}",
-    pdfRodape: "Finanças  ·  Página {p} de {total}",
+    pdfRodape: "Koin  ·  Página {p} de {total}",
     pdfArquivo: "relatorio",
     despesasPagas: "Despesas pagas",
     saldoPeriodo: "Saldo no período",
