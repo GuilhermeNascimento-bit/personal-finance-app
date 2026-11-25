@@ -9,6 +9,7 @@ import {
 } from "../../firebase/recorrentes";
 import { useMoeda } from "../../context/MoedaContext";
 import Confirmacao from "../../components/Confirmacao";
+import { useDemo } from "../../demo/DemoContext";
 import "./fluxo.css";
 import { useIdioma } from "../../i18n/IdiomaContext";
 
@@ -131,6 +132,7 @@ export default function PaginaFluxo({ transacoes }) {
   const { usuario } = useAuth();
   const { formatarValor: fmtBRL } = useMoeda();
   const { t: tl, locale } = useIdioma();
+  const { emDemo, pedirConta } = useDemo();
   const forma = (f) => tl(`comum.${f}`);
   const hoje = new Date();
 
@@ -345,7 +347,7 @@ export default function PaginaFluxo({ transacoes }) {
             <h3 className="fluxo-secao-titulo">{tl("fluxo.fixos")}</h3>
             <button
               className="fluxo-btn-adicionar"
-              onClick={() => { setEditando(null); setModalAberto(true); }}
+              onClick={() => (emDemo ? pedirConta("fixos") : (setEditando(null), setModalAberto(true)))}
             >
               + {tl("modal.adicionar")}
             </button>
@@ -365,7 +367,7 @@ export default function PaginaFluxo({ transacoes }) {
                     <p className="fluxo-rec-det">{tl("fluxo.dia", { dia: r.dia })} · {fmtBRL(r.valor)}{r.formaPagamento && r.formaPagamento !== "dinheiro" ? ` · ${forma(r.formaPagamento)}` : ""}</p>
                   </div>
                   <div className="fluxo-rec-acoes">
-                    <button className="fluxo-rec-btn editar" onClick={() => { setEditando(r); setModalAberto(true); }} title={tl("comum.editar")}>✎</button>
+                    <button className="fluxo-rec-btn editar" onClick={() => (emDemo ? pedirConta("fixos") : (setEditando(r), setModalAberto(true)))} title={tl("comum.editar")}>✎</button>
                     <button className="fluxo-rec-btn excluir" onClick={() => setFixoRemover(r)} title={tl("comum.remover")}>✕</button>
                   </div>
                 </div>

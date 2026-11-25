@@ -1,0 +1,174 @@
+/* verificar-email.css — tela "Confira seu e-mail" */
+
+.cartao-login.verificar { text-align: center; }
+.cartao-login.verificar .marca-login { justify-content: center; }
+
+.verificar-titulo { margin-top: 4px; }
+
+/* Envelope animado */
+.verificar-envelope {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  margin: 4px auto 18px;
+}
+
+.verificar-carta {
+  position: absolute;
+  inset: 14px 8px;
+  border-radius: 10px;
+  background: var(--cor-acento);
+  box-shadow: 0 12px 28px -10px color-mix(in srgb, var(--cor-acento) 70%, transparent);
+  animation: cartaFlutua 2.6s ease-in-out infinite;
+}
+
+/* aba do envelope */
+.verificar-carta::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 60%;
+  background: color-mix(in srgb, var(--cor-acento) 70%, #fff);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  border-radius: 10px 10px 0 0;
+}
+
+.verificar-pulso {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--cor-acento);
+  opacity: 0;
+  animation: pulsoEnvelope 2.6s ease-out infinite;
+}
+
+@keyframes cartaFlutua {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50%      { transform: translateY(-6px) rotate(3deg); }
+}
+
+@keyframes pulsoEnvelope {
+  0%   { transform: scale(0.6); opacity: 0.6; }
+  100% { transform: scale(1.25); opacity: 0; }
+}
+
+.verificar-dica {
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+  margin: -6px 0 22px;
+}
+
+.verificar-abrir {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  border-radius: var(--raio-total);
+  background: var(--cor-texto-principal);
+  color: var(--cor-fundo-pagina);
+  margin-bottom: 10px;
+}
+
+.verificar-secundario {
+  width: 100%;
+  height: 46px;
+  border-radius: var(--raio-total);
+  border: 1px solid var(--cor-borda);
+  background: transparent;
+  color: var(--cor-texto-principal);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.verificar-secundario:hover:not(:disabled) { background: var(--cor-superficie); transform: translateY(-1px); }
+.verificar-secundario:disabled { opacity: 0.6; cursor: progress; }
+
+.verificar-aguardando {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  font-size: 12.5px;
+  color: var(--cor-texto-secundario);
+}
+
+.verificar-ponto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cor-acento);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--cor-acento) 60%, transparent);
+  animation: pontoEspera 1.6s ease-out infinite;
+}
+
+@keyframes pontoEspera {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--cor-acento) 55%, transparent); }
+  100% { box-shadow: 0 0 0 10px transparent; }
+}
+
+.verificar-msg {
+  margin-top: 12px;
+  font-size: 13px;
+  animation: revelar 0.4s ease backwards;
+}
+.verificar-msg.ok { color: var(--cor-sucesso-texto); }
+.verificar-msg.erro { color: var(--cor-erro-texto); }
+
+.verificar-rodape {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--cor-borda-cartao);
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+}
+
+.verificar-rodape button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--cor-texto-principal);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.verificar-rodape button:disabled {
+  color: var(--cor-texto-secundario);
+  font-weight: 500;
+  cursor: default;
+}
+
+/* Confirmado */
+.verificar-ok { padding: 12px 0; }
+
+.verificar-check {
+  width: 84px;
+  height: 84px;
+  margin: 0 auto 18px;
+  display: block;
+  fill: none;
+  stroke: var(--cor-acento);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 10px 22px color-mix(in srgb, var(--cor-acento) 45%, transparent));
+}
+.verificar-check circle {
+  stroke-dasharray: 151;
+  stroke-dashoffset: 151;
+  fill: color-mix(in srgb, var(--cor-acento) 12%, transparent);
+  animation: desenharCheck 0.7s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+.verificar-check path {
+  stroke-dasharray: 36;
+  stroke-dashoffset: 36;
+  animation: desenharCheck 0.4s cubic-bezier(0.65, 0, 0.35, 1) 0.55s forwards;
+}
+@keyframes desenharCheck { to { stroke-dashoffset: 0; } }

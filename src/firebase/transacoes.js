@@ -18,6 +18,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "./firebaseConfig";
+import { emDemo, demo } from "../demo/demo";
 
 // Caminho da coleção de transações de um usuário específico.
 function colecaoTransacoes(uid) {
@@ -29,6 +30,9 @@ function colecaoTransacoes(uid) {
 // dadosTransacao: { categoria, data (Date), valor (number), status: "pago" | "pendente" }
 export async function adicionarTransacao(uid, tipo, dadosTransacao) {
   const { categoria, data, valor, status, ...extras } = dadosTransacao;
+  if (emDemo()) {
+    return demo.adicionar("transacoes", { tipo, categoria, data: new Date(data), valor: Number(valor), status, ...extras });
+  }
 
   return addDoc(colecaoTransacoes(uid), {
     tipo,
@@ -44,6 +48,12 @@ export async function adicionarTransacao(uid, tipo, dadosTransacao) {
 
 // Edita uma transação existente.
 export async function editarTransacao(uid, transacaoId, novosDados) {
+  if (emDemo()) {
+    const dados = { ...novosDados };
+    if (dados.data) dados.data = new Date(dados.data);
+    if (dados.valor !== undefined) dados.valor = Number(dados.valor);
+    return demo.editar("transacoes", transacaoId, dados);
+  }
   const ref = doc(db, "usuarios", uid, "transacoes", transacaoId);
 
   const payload = { ...novosDados, atualizadoEm: serverTimestamp() };
@@ -56,6 +66,7 @@ export async function editarTransacao(uid, transacaoId, novosDados) {
 
 // Remove uma transação.
 export async function removerTransacao(uid, transacaoId) {
+  if (emDemo()) return demo.remover("transacoes", transacaoId);
   const ref = doc(db, "usuarios", uid, "transacoes", transacaoId);
   return deleteDoc(ref);
 }
@@ -63,6 +74,7 @@ export async function removerTransacao(uid, transacaoId) {
 // Escuta em tempo real todas as transações do usuário, ordenadas por data.
 // Uso: const unsubscribe = escutarTransacoes(uid, (transacoes) => { ... });
 export function escutarTransacoes(uid, callback) {
+  if (emDemo()) return demo.escutar("transacoes", callback);
   const q = query(colecaoTransacoes(uid), orderBy("data", "desc"));
 
   return onSnapshot(q, (snapshot) => {
@@ -77,6 +89,7 @@ export function escutarTransacoes(uid, callback) {
 
 // Escuta apenas transações de um tipo específico ("receita" ou "despesa").
 export function escutarTransacoesPorTipo(uid, tipo, callback) {
+  if (emDemo()) return demo.escutar("transacoes", (lista) => callback(lista.filter((t) => t.tipo === tipo)));
   const q = query(
     colecaoTransacoes(uid),
     where("tipo", "==", tipo),

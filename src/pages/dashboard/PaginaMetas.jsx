@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
-import {
-  collection, addDoc, updateDoc, deleteDoc,
-  doc, onSnapshot, serverTimestamp, orderBy, query
-} from "firebase/firestore";
-import { db } from "../../firebase/firebaseConfig";
+import { escutarMetas, adicionarMeta, atualizarMeta, removerMeta as removerMetaDb } from "../../firebase/metas";
 import { adicionarTransacao } from "../../firebase/transacoes";
 import { useMoeda } from "../../context/MoedaContext";
 import Confirmacao from "../../components/Confirmacao";
+import { useDemo } from "../../demo/DemoContext";
 import "./recomendacoes.css";
 import { useIdioma } from "../../i18n/IdiomaContext";
 
@@ -42,13 +39,11 @@ function ModalNovaMeta({ uid, aoFechar }) {
 
     setSalvando(true);
     try {
-      await addDoc(collection(db, "usuarios", uid, "metas"), {
+      await adicionarMeta(uid, {
         nome: nome.trim(),
         valor: Number(valor),
         dataAlvo,
         emoji,
-        acumulado: 0,
-        criadoEm: serverTimestamp(),
       });
       aoFechar();
     } catch (err) {
@@ -129,6 +124,7 @@ export default function PaginaMetas() {
   const { usuario } = useAuth();
   const { formatarValor: fmt, moeda } = useMoeda();
   const { t, formatarData } = useIdioma();
+  const { emDemo, pedirConta } = useDemo();
   const uid = usuario?.uid;
   const [metas, setMetas] = useState([]);
   const [modalAberto, setModalAberto] = useState(false);
@@ -139,17 +135,11 @@ export default function PaginaMetas() {
 
   useEffect(() => {
     if (!uid) return;
-    const q = query(
-      collection(db, "usuarios", uid, "metas"),
-      orderBy("criadoEm", "desc")
-    );
-    return onSnapshot(q, (snap) => {
-      setMetas(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-    });
+    return escutarMetas(uid, setMetas);
   }, [uid]);
 
   async function removerMeta() {
-    await deleteDoc(doc(db, "usuarios", uid, "metas", paraRemover.id));
+    await removerMetaDb(uid, paraRemover.id);
     setParaRemover(null);
   }
 
@@ -165,7 +155,7 @@ export default function PaginaMetas() {
     setSalvandoEconomia(true);
     try {
       await Promise.all([
-      updateDoc(doc(db, "usuarios", uid, "metas", meta.id), {
+      atualizarMeta(uid, meta.id, {
         acumulado: (meta.acumulado || 0) + valor,
       }),
       adicionarTransacao(uid, "despesa", {
@@ -191,7 +181,7 @@ export default function PaginaMetas() {
               {t("metas.planejamentoSub")}
             </p>
           </div>
-          <button className="botao-nova-meta" onClick={() => setModalAberto(true)}>
+          <button className="botao-nova-meta" onClick={() => (emDemo ? pedirConta("metas") : setModalAberto(true))}>
             + {t("metas.nova")}
           </button>
         </div>

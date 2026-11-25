@@ -2,6 +2,7 @@ import { useState } from "react";
 import { adicionarTransacao, editarTransacao } from "../../firebase/transacoes";
 import { adicionarRecorrente } from "../../firebase/recorrentes";
 import { useMoeda } from "../../context/MoedaContext";
+import { useDemo } from "../../demo/DemoContext";
 import { useIdioma } from "../../i18n/IdiomaContext";
 
 const OPCOES_PARCELAS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
@@ -9,6 +10,7 @@ const OPCOES_PARCELAS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 export default function ModalTransacao({ uid, transacao, aoFechar, tipoInicial = "despesa" }) {
   const editando = !!transacao;
   const { t } = useIdioma();
+  const { emDemo, pedirConta } = useDemo();
 
   const [tipo, setTipo] = useState(transacao?.tipo || tipoInicial);
   const [categoria, setCategoria] = useState(transacao?.categoria || "");
@@ -195,6 +197,7 @@ export default function ModalTransacao({ uid, transacao, aoFechar, tipoInicial =
                   type="button"
                   className={`toggle-opcao ${ehRecorrente ? "ativo" : ""}`}
                   onClick={() => {
+                    if (emDemo) return pedirConta("fixos");
                     setEhRecorrente(true);
                     setDiaRecorrente(data ? String(new Date(data + "T12:00:00").getDate()) : String(new Date().getDate()));
                   }}

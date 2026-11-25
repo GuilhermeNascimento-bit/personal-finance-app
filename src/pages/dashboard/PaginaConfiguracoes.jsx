@@ -7,6 +7,7 @@ import { useMoeda, MOEDAS } from "../../context/MoedaContext";
 import { IDIOMAS, useIdioma } from "../../i18n/IdiomaContext";
 import { trocarTemaAnimado } from "../../utils/tema";
 import Icone from "../../components/Icone";
+import { useDemo } from "../../demo/DemoContext";
 import "./configuracoes.css";
 
 // ── Paleta de cores de destaque ───────────────────────────────────────────────
@@ -41,6 +42,7 @@ const TEMAS = [
 export default function PaginaConfiguracoes() {
   const { usuario, sair } = useAuth();
   const { t, idioma, setIdioma } = useIdioma();
+  const { emDemo, criarConta } = useDemo();
   const fotoInputRef = useRef(null);
 
   const [nome, setNome] = useState(usuario?.displayName || "");
@@ -130,6 +132,21 @@ export default function PaginaConfiguracoes() {
   return (
     <div className="cfg">
       {/* ═══════ Cartão de perfil ═══════ */}
+      {emDemo ? (
+      <aside className="cfg-perfil-palco">
+        <div className="cfg-perfil luz inclinar cfg-perfil-demo">
+          <span className="cfg-perfil-brilho" aria-hidden="true" />
+          <div className="cfg-avatar"><span><Icone nome="usuario" tamanho={40} /></span></div>
+          <p className="cfg-perfil-nome">{t("demo.perfilTitulo")}</p>
+          <p className="cfg-perfil-email">{t("demo.perfilTexto")}</p>
+          <div className="cfg-perfil-acoes">
+            <button className="cfg-perfil-botao destaque" onClick={criarConta}>
+              {t("demo.criarConta")} <Icone nome="chevron" tamanho={16} />
+            </button>
+          </div>
+        </div>
+      </aside>
+      ) : (
       <aside className="cfg-perfil-palco">
         <div className="cfg-perfil luz inclinar">
           <span className="cfg-perfil-brilho" aria-hidden="true" />
@@ -167,10 +184,12 @@ export default function PaginaConfiguracoes() {
           </div>
         </div>
       </aside>
+      )}
 
       {/* ═══════ Seções ═══════ */}
       <div className="cfg-secoes">
-        {/* Perfil */}
+        {!emDemo && (<>
+{/* Perfil */}
         <section className="cfg-secao luz">
           <header className="cfg-secao-cab">
             <span className="cfg-secao-icone"><Icone nome="usuario" tamanho={18} /></span>
@@ -206,6 +225,8 @@ export default function PaginaConfiguracoes() {
             </button>
           </div>
         </section>
+
+        </>)}
 
         {/* Aparência */}
         <section className="cfg-secao luz">
@@ -299,7 +320,8 @@ export default function PaginaConfiguracoes() {
           <p className="cfg-dica">⠿ {t("config.ordemAbas")}</p>
         </section>
 
-        {/* Segurança */}
+        {!emDemo && (<>
+{/* Segurança */}
         <section className="cfg-secao luz">
           <header className="cfg-secao-cab">
             <span className="cfg-secao-icone"><Icone nome="cadeado" tamanho={18} /></span>
@@ -314,7 +336,9 @@ export default function PaginaConfiguracoes() {
               {t("config.enviarLink")}
             </button>
           </div>
-        </section>
+        </section></>)}
+
+        
       </div>
     </div>
   );

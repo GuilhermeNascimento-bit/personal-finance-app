@@ -480,3 +480,13 @@
   .cfg-tema-previa { height: 48px; }
   .cfg-secao { padding: 18px; }
 }
+
+/* Demo: convite no lugar do perfil */
+.cfg-perfil-demo .cfg-perfil-email { max-width: 24em; line-height: 1.5; }
+.cfg-perfil-botao.destaque {
+  background: var(--cor-acento);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 10px 22px -10px var(--cor-acento);
+}
+.cfg-perfil-botao.destaque:hover { background: var(--cor-acento); }

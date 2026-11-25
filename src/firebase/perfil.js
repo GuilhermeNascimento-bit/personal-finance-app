@@ -6,6 +6,7 @@
 import { useEffect, useState } from "react";
 import { doc, setDoc, deleteDoc, onSnapshot, serverTimestamp } from "firebase/firestore";
 import { db } from "./firebaseConfig";
+import { emDemo } from "../demo/demo";
 
 const LADO = 256;
 
@@ -47,7 +48,7 @@ export function useFotoPerfil(usuario) {
   const [foto, setFoto] = useState(null);
 
   useEffect(() => {
-    if (!uid) return;
+    if (!uid || emDemo()) return;
     return onSnapshot(
       refFoto(uid),
       (snap) => setFoto(snap.exists() ? snap.data().dataUrl : null),

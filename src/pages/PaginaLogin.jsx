@@ -11,12 +11,11 @@ import Logo from "../components/Logo";
 import Digitando from "../components/Digitando";
 import "./PaginaLogin.css";
 
-export default function PaginaLogin() {
+export default function PaginaLogin({ modo = "entrar", aoTrocarModo, aoVoltar, aoVerDemo }) {
   const { entrar, cadastrar } = useAuth();
   const { t, idioma, setIdioma } = useIdioma();
   const [tema, setTema] = useState(temaEfetivo);
 
-  const [modo, setModo] = useState("entrar"); // "entrar" | "cadastrar"
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -27,7 +26,7 @@ export default function PaginaLogin() {
 
   function alternarModo() {
     setErro("");
-    setModo(ehCadastro ? "entrar" : "cadastrar");
+    aoTrocarModo?.(ehCadastro ? "entrar" : "cadastrar");
   }
 
   async function lidarComEnvio(evento) {
@@ -36,7 +35,7 @@ export default function PaginaLogin() {
     setEnviando(true);
 
     const resultado = ehCadastro
-      ? await cadastrar(nome.trim(), email.trim(), senha)
+      ? await cadastrar(nome.trim(), email.trim(), senha, idioma)
       : await entrar(email.trim(), senha);
 
     setEnviando(false);
@@ -56,6 +55,11 @@ export default function PaginaLogin() {
         <span className="orbe orbe-1" />
         <span className="orbe orbe-2" />
       </div>
+      {aoVoltar && (
+        <button className="login-voltar" onClick={aoVoltar}>
+          <Icone nome="chevron-esq" tamanho={16} /> {t("login.voltar")}
+        </button>
+      )}
       <div className="login-cantos">
         <button className="login-canto-botao" onClick={() => setIdioma(idioma === "pt" ? "en" : "pt")}>
           <Icone nome="globo" tamanho={16} /> {idioma === "pt" ? "English" : "Português"}
@@ -140,6 +144,12 @@ export default function PaginaLogin() {
             {ehCadastro ? t("login.entrar") : t("login.criarConta")}
           </button>
         </p>
+        {ehCadastro && <p className="login-aviso-email"><Icone nome="check" tamanho={14} /> {t("login.avisoEmail")}</p>}
+        {aoVerDemo && (
+          <button type="button" className="login-demo" onClick={aoVerDemo}>
+            {t("login.verDemo")} <Icone nome="chevron" tamanho={14} />
+          </button>
+        )}
       </div>
     </div>
   );

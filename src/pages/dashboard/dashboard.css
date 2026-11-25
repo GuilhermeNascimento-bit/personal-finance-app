@@ -1735,3 +1735,70 @@
 .topbar-botao:hover .icone { transform: scale(1.15); }
 .topbar-botao[data-aba="configuracoes"]:hover .icone { transform: none; animation: girar 1.6s linear infinite; }
 .topbar-botao:not([data-aba]):hover .topbar-tema-icone .icone { transform: rotate(25deg) scale(1.15); }
+
+/* ══════════════ Modo demonstração ══════════════ */
+.topbar-criar-conta {
+  height: 36px;
+  padding: 0 16px;
+  border: none;
+  border-radius: var(--raio-total);
+  background: var(--cor-acento);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 8px 18px -8px var(--cor-acento);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: surgir 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s backwards;
+}
+.topbar-criar-conta:hover { transform: translateY(-2px); }
+
+.faixa-demo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 10px 10px 10px 14px;
+  border-radius: 16px;
+  background: var(--cor-acento-fundo-suave);
+  border: 1px solid color-mix(in srgb, var(--cor-acento) 25%, transparent);
+  font-size: 13.5px;
+  animation: revelar 0.6s cubic-bezier(0.2, 0, 0, 1) backwards;
+}
+
+.faixa-demo-selo {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 700;
+  color: var(--cor-acento);
+  white-space: nowrap;
+}
+
+.faixa-demo-texto { flex: 1; color: var(--cor-texto-label); }
+
+.faixa-demo button {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 32px;
+  padding: 0 12px 0 14px;
+  border: none;
+  border-radius: var(--raio-total);
+  background: var(--cor-texto-principal);
+  color: var(--cor-fundo-pagina);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  /* no celular, o "sair da demo" continua visível na barra */
+  .topbar-acoes .botao-sair.demo { display: flex; }
+  .topbar-criar-conta { display: none; }
+  .faixa-demo { flex-wrap: wrap; gap: 6px 10px; margin-bottom: 18px; }
+  .faixa-demo-texto { flex-basis: 100%; order: 3; font-size: 12.5px; }
+  .faixa-demo button { margin-left: auto; }
+}

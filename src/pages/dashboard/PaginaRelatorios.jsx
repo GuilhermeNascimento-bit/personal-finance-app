@@ -6,6 +6,7 @@ import {
 import { jsPDF } from "jspdf";
 import { calcularRelatorio } from "../../firebase/transacoes";
 import { useMoeda } from "../../context/MoedaContext";
+import { useDemo } from "../../demo/DemoContext";
 import "./relatorios.css";
 import { useIdioma } from "../../i18n/IdiomaContext";
 
@@ -218,6 +219,7 @@ async function gerarPDF({ periodoLabel, relatorio, evolucao, porCategoria, fmt, 
 export default function PaginaRelatorios({ transacoes }) {
   const { formatarValor, moeda } = useMoeda();
   const { t, locale } = useIdioma();
+  const { emDemo, pedirConta } = useDemo();
   const fmt = formatarValor;
   const [periodoIdx, setPeriodoIdx] = useState(1);
   const [exportando, setExportando] = useState(false);
@@ -288,7 +290,7 @@ export default function PaginaRelatorios({ transacoes }) {
         </div>
         <button
           className="btn-exportar-pdf"
-          onClick={handleExportar}
+          onClick={() => (emDemo ? pedirConta("pdf") : handleExportar())}
           disabled={exportando}
         >
           {exportando ? t("rel.gerando") : `↓ ${t("rel.exportar")}`}

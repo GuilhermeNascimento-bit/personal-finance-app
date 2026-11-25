@@ -27,6 +27,7 @@ import Digitando from "../../components/Digitando";
 import Confirmacao from "../../components/Confirmacao";
 import { useMoeda } from "../../context/MoedaContext";
 import { useFotoPerfil } from "../../firebase/perfil";
+import { useDemo } from "../../demo/DemoContext";
 import { temaEfetivo, trocarTemaAnimado } from "../../utils/tema";
 import "./dashboard.css";
 
@@ -130,6 +131,7 @@ export default function Dashboard() {
   const { usuario, sair } = useAuth();
   const { t, idioma, setIdioma, formatarData } = useIdioma();
   const { formatarValor } = useMoeda();
+  const { emDemo, criarConta, sairDemo } = useDemo();
 
   const [transacoes, setTransacoes] = useState([]);
   const [carregando, setCarregando] = useState(true);
@@ -138,7 +140,8 @@ export default function Dashboard() {
   const [aba, setAba] = useState("visao-geral"); // id "folha" (pode ser sub-aba)
   const [ultimaSub, setUltimaSub] = useState({}); // lembra a última sub-aba de cada mãe
   const [abas, setAbas] = useState(carregarAbas);
-  const [tutorialAberto, setTutorialAberto] = useState(() => !localStorage.getItem("tutorial-completo"));
+  // na demo o tour sempre abre; com conta, só na primeira vez
+  const [tutorialAberto, setTutorialAberto] = useState(() => emDemo || !localStorage.getItem("tutorial-completo"));
   const [maisAberto, setMaisAberto] = useState(false);
   const [tipoModalInicial, setTipoModalInicial] = useState("despesa");
   const [tema, setTema] = useState(temaEfetivo);
@@ -202,7 +205,7 @@ export default function Dashboard() {
   }
 
   function fecharTutorial() {
-    localStorage.setItem("tutorial-completo", "1");
+    if (!emDemo) localStorage.setItem("tutorial-completo", "1");
     setTutorialAberto(false);
   }
 
@@ -279,15 +282,35 @@ export default function Dashboard() {
             <Icone nome="configuracoes" tamanho={18} />
           </button>
           <span className="topbar-divisor" />
-          <Avatar usuario={usuario} size={32} />
-          <button className="topbar-botao botao-sair" onClick={sair} title={t("comum.sair")}>
-            <Icone nome="sair" tamanho={17} />
-          </button>
+          {emDemo ? (
+            <>
+              <button className="topbar-criar-conta" onClick={criarConta}>
+                {t("demo.criarConta")}
+              </button>
+              <button className="topbar-botao botao-sair demo" onClick={sairDemo} title={t("demo.sair")}>
+                <Icone nome="fechar" tamanho={17} />
+              </button>
+            </>
+          ) : (
+            <>
+              <Avatar usuario={usuario} size={32} />
+              <button className="topbar-botao botao-sair" onClick={sair} title={t("comum.sair")}>
+                <Icone nome="sair" tamanho={17} />
+              </button>
+            </>
+          )}
         </div>
       </header>
 
       {/* ── Conteúdo ── */}
       <main className="conteudo-dashboard">
+        {emDemo && (
+          <div className="faixa-demo">
+            <span className="faixa-demo-selo"><span className="verificar-ponto" /> {t("demo.selo")}</span>
+            <span className="faixa-demo-texto">{t("demo.faixa")}</span>
+            <button onClick={criarConta}>{t("demo.criarConta")} <Icone nome="chevron" tamanho={14} /></button>
+          </div>
+        )}
         {mae !== "visao-geral" && mae !== "diario" && (
           <header className="cabecalho-dashboard">
             <div>
@@ -417,7 +440,14 @@ export default function Dashboard() {
         </div>
       )}
 
-      {tutorialAberto && <Tutorial aoFechar={fecharTutorial} onNavegar={irPara} />}
+      {tutorialAberto && (
+        <Tutorial
+          aoFechar={fecharTutorial}
+          onNavegar={irPara}
+          demo={emDemo}
+          aoCriarConta={() => { fecharTutorial(); criarConta(); }}
+        />
+      )}
 
       {confirmarEdicao && (
         <Confirmacao

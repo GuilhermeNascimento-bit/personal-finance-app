@@ -3,13 +3,20 @@
 // o usuário atual, um estado de "carregando" (enquanto verifica a
 // sessão) e as funções de cadastro/login/logout já tratadas.
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import {
   cadastrarUsuario as cadastrarUsuarioFirebase,
   logarUsuario as logarUsuarioFirebase,
   deslogarUsuario as deslogarUsuarioFirebase,
   observarUsuario,
+  enviarVerificacao,
+  recarregarUsuario,
+  precisaVerificarEmail,
 } from "../firebase/auth";
+import { iniciarDemo as ligarDemo, encerrarDemo as desligarDemo } from "../demo/demo";
+
+// Usuário "de mentira" do modo demonstração (nada dele vai ao Firebase)
+const USUARIO_DEMO = { uid: "demo-local", displayName: "", email: null, demo: true };
 
 const AuthContext = createContext(null);
 
@@ -30,20 +37,32 @@ function traduzirErroFirebase(codigo) {
 }
 
 export function AuthProvider({ children }) {
-  const [usuario, setUsuario] = useState(null);
+  const [usuarioReal, setUsuario] = useState(null);
   const [carregando, setCarregando] = useState(true);
+  const [usuarioDemo, setUsuarioDemo] = useState(null);
+  // muda quando recarregamos o usuário (o objeto do Firebase é o mesmo,
+  // então isso força quem depende de emailVerified a re-renderizar)
+  const [versao, setVersao] = useState(0);
+
+  const usuario = usuarioReal ?? usuarioDemo;
+  const emDemo = !usuarioReal && !!usuarioDemo;
 
   useEffect(() => {
     const unsubscribe = observarUsuario((usuarioFirebase) => {
+      // conta real entrou: a demo precisa sair antes de qualquer leitura do banco
+      if (usuarioFirebase) {
+        desligarDemo();
+        setUsuarioDemo(null);
+      }
       setUsuario(usuarioFirebase);
       setCarregando(false);
     });
     return unsubscribe;
   }, []);
 
-  async function cadastrar(nome, email, senha) {
+  async function cadastrar(nome, email, senha, idioma) {
     try {
-      await cadastrarUsuarioFirebase(nome, email, senha);
+      await cadastrarUsuarioFirebase(nome, email, senha, idioma);
       return { sucesso: true };
     } catch (erro) {
       return { sucesso: false, codigo: erro.code, mensagem: traduzirErroFirebase(erro.code) };
@@ -60,11 +79,49 @@ export function AuthProvider({ children }) {
   }
 
   async function sair() {
+    if (emDemo) {
+      // sai da demo e volta para a apresentação
+      encerrarDemo();
+      history.pushState(null, "", window.location.pathname + window.location.search);
+      window.dispatchEvent(new HashChangeEvent("hashchange"));
+      return;
+    }
     await deslogarUsuarioFirebase();
   }
 
+  const iniciarDemo = useCallback((idioma, nomeVisitante) => {
+    ligarDemo(idioma);
+    setUsuarioDemo({ ...USUARIO_DEMO, displayName: nomeVisitante || "" });
+  }, []);
+
+  const encerrarDemo = useCallback(() => {
+    desligarDemo();
+    setUsuarioDemo(null);
+  }, []);
+
+  const atualizarUsuario = useCallback(async () => {
+    const u = await recarregarUsuario();
+    setVersao((v) => v + 1);
+    return u;
+  }, []);
+
+  const valor = {
+    usuario,
+    carregando,
+    cadastrar,
+    entrar,
+    sair,
+    emDemo,
+    iniciarDemo,
+    encerrarDemo,
+    precisaVerificar: precisaVerificarEmail(usuarioReal),
+    reenviarVerificacao: enviarVerificacao,
+    atualizarUsuario,
+    versao,
+  };
+
   return (
-    <AuthContext.Provider value={{ usuario, carregando, cadastrar, entrar, sair }}>
+    <AuthContext.Provider value={valor}>
       {children}
     </AuthContext.Provider>
   );
