@@ -10,6 +10,21 @@ const PASSOS = [
 
 const LARGURA_CARD = 320;
 
+const visivel = (el) =>
+  el.getClientRects().length > 0 && getComputedStyle(el).visibility !== "hidden";
+
+// Prioridade: item numa barra de navegação visível → qualquer item visível
+// (ex.: sub-aba) → botão "Mais" do celular (onde ficam Metas, Relatórios, Config.)
+function acharAlvo(alvo) {
+  const candidatos = [...document.querySelectorAll(`[data-aba="${alvo}"]`)].filter(visivel);
+  return (
+    candidatos.find((el) => el.closest(".topbar, .navbar-mobile")) ||
+    candidatos[0] ||
+    [...document.querySelectorAll('[data-aba="mais"]')].find(visivel) ||
+    null
+  );
+}
+
 export default function Tutorial({ aoFechar, onNavegar }) {
   const { t } = useIdioma();
   const [passo, setPasso] = useState(0);
@@ -19,8 +34,8 @@ export default function Tutorial({ aoFechar, onNavegar }) {
   const [titulo, descricao] = t(`tutorial.passos.${alvo}`);
 
   const medir = useCallback(() => {
-    const el = document.querySelector(`[data-aba="${alvo}"]`);
-    setRect(el && el.offsetParent !== null ? el.getBoundingClientRect() : null);
+    const el = acharAlvo(alvo);
+    setRect(el ? el.getBoundingClientRect() : null);
   }, [alvo]);
 
   // Navega primeiro (sub-abas só existem depois), depois mede o alvo
@@ -63,22 +78,25 @@ export default function Tutorial({ aoFechar, onNavegar }) {
     const top = abaixo + 240 < window.innerHeight ? abaixo : Math.max(16, rect.top - 258);
     cardStyle = { top, left };
   } else {
-    cardStyle = { top: "50%", left: "50%", transform: "translate(-50%,-50%)" };
+    cardStyle = { top: "50%", marginTop: -120, left: Math.max(16, (window.innerWidth - LARGURA_CARD) / 2) };
   }
 
   const ultimo = passo === PASSOS.length - 1;
 
   return (
     <div className="tutorial-overlay">
+      {!rect && <div className="tutorial-fundo" />}
       {rect && (
         <div
           className="tutorial-spotlight"
-          style={{
-            top: rect.top - 6,
-            left: rect.left - 8,
-            width: rect.width + 16,
-            height: rect.height + 12,
-          }}
+          style={(() => {
+            // folga ao redor do alvo, sem passar das bordas da tela
+            const top = Math.max(4, rect.top - 6);
+            const left = Math.max(4, rect.left - 8);
+            const right = Math.min(window.innerWidth - 4, rect.right + 8);
+            const bottom = Math.min(window.innerHeight - 4, rect.bottom + 6);
+            return { top, left, width: right - left, height: bottom - top };
+          })()}
         />
       )}
 

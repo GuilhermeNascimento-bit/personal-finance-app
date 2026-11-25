@@ -364,7 +364,7 @@ export default function Dashboard() {
       {/* ── Navbar mobile ── */}
       <nav className="navbar-mobile">
         {abasMobileFixas.slice(0, 2).map((id) => (
-          <button key={id} className={`nav-mobile-item ${mae === id ? "ativo" : ""}`} onClick={() => navegar(id)}>
+          <button key={id} className={`nav-mobile-item ${mae === id ? "ativo" : ""}`} onClick={() => navegar(id)} data-aba={id}>
             <Icone nome={id} tamanho={20} />
             <span>{t(`nav.${id}`)}</span>
           </button>
@@ -373,13 +373,14 @@ export default function Dashboard() {
           <Icone nome="mais_sinal" tamanho={22} />
         </button>
         {abasMobileFixas.slice(2).map((id) => (
-          <button key={id} className={`nav-mobile-item ${mae === id ? "ativo" : ""}`} onClick={() => navegar(id)}>
+          <button key={id} className={`nav-mobile-item ${mae === id ? "ativo" : ""}`} onClick={() => navegar(id)} data-aba={id}>
             <Icone nome={id} tamanho={20} />
             <span>{t(`nav.${id}`)}</span>
           </button>
         ))}
         <button
           className={`nav-mobile-item ${abasMobileExtras.includes(mae) ? "ativo" : ""}`}
+          data-aba="mais"
           onClick={() => setMaisAberto(true)}
         >
           <Icone nome="mais" tamanho={20} />

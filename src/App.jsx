@@ -12,18 +12,23 @@ function ConteudoApp() {
   const { usuario, carregando } = useAuth();
   const { t } = useIdioma();
   useLuzReativa();
-  const [verificandoTransacoes, setVerificandoTransacoes] = useState(true);
+  // uid cujas transações já foram verificadas. Enquanto o usuário logado não
+  // for esse, mostramos o carregador — evita o painel (e o tutorial) piscar
+  // antes de sabermos se a conta precisa de onboarding.
+  const [uidVerificado, setUidVerificado] = useState(null);
   const [precisaOnboarding, setPrecisaOnboarding] = useState(false);
   const [onboardingConcluido, setOnboardingConcluido] = useState(false);
 
   useEffect(() => {
-    if (!usuario) { setVerificandoTransacoes(false); return; }
-    const unsubscribe = escutarTransacoes(usuario.uid, (transacoes) => {
+    if (!usuario) return;
+    const uid = usuario.uid;
+    return escutarTransacoes(uid, (transacoes) => {
       setPrecisaOnboarding(transacoes.length === 0);
-      setVerificandoTransacoes(false);
+      setUidVerificado(uid);
     });
-    return unsubscribe;
   }, [usuario]);
+
+  const verificandoTransacoes = !!usuario && uidVerificado !== usuario.uid;
 
   if (carregando || verificandoTransacoes) {
     return (

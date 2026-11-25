@@ -153,3 +153,16 @@
   background: var(--cor-acento-hover);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
+
+/* Fundo escuro quando o passo não tem um elemento para destacar */
+.tutorial-fundo {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.62);
+  animation: fadeIn 0.25s ease;
+}
+
+/* Celular: card ocupa a largura útil da tela */
+@media (max-width: 520px) {
+  .tutorial-card { width: auto; left: 16px !important; right: 16px; }
+}
