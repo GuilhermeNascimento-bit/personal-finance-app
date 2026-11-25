@@ -26,9 +26,14 @@ export async function cadastrarUsuario(nome, email, senha, idioma = "pt") {
   return usuario;
 }
 
-// Toda conta precisa confirmar o e-mail (as regras do Firestore exigem isso).
+// Conta demo pública (demo@demo.com): e-mail fictício, não tem como confirmar.
+// É a única exceção — a mesma está nas regras do Firestore (firestore.rules).
+export const UID_CONTA_DEMO = "3DrIMVVqmpVn6SKXz7poYbMpBmd2";
+
+// Toda conta precisa confirmar o e-mail (as regras do Firestore exigem isso),
+// exceto a conta demo.
 export function precisaVerificarEmail(usuario) {
-  return !!usuario && !usuario.emailVerified;
+  return !!usuario && !usuario.emailVerified && usuario.uid !== UID_CONTA_DEMO;
 }
 
 // Marca que o link já foi enviado nesta sessão (evita reenvio automático)

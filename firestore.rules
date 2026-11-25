@@ -2,13 +2,19 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Dono da conta, logado e com o e-mail CONFIRMADO.
+    // Conta demo pública (demo@demo.com): o e-mail é fictício e não tem
+    // como ser confirmado, então ela é a única exceção à confirmação.
+    function contaDemo() {
+      return request.auth.uid == "3DrIMVVqmpVn6SKXz7poYbMpBmd2";
+    }
+
+    // Dono da conta, logado e com o e-mail CONFIRMADO (ou a conta demo).
     // Sem confirmar o e-mail, o banco não lê nem grava nada — mesmo que
     // alguém tente acessar direto pela API, sem passar pelo app.
     function donoConfirmado(userId) {
       return request.auth != null
         && request.auth.uid == userId
-        && request.auth.token.email_verified == true;
+        && (request.auth.token.email_verified == true || contaDemo());
     }
 
     // Tudo do usuário: transações, pagamentos fixos, metas e foto de perfil
